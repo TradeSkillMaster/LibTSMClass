@@ -18,12 +18,14 @@ local SPECIAL_PROPERTIES = {
 	__isa = true,
 	__super = true,
 	__name = true,
+	__as = true,
 }
 local RESERVED_KEYS = {
 	__super = true,
 	__isa = true,
 	__class = true,
 	__name = true,
+	__as = true,
 }
 local DEFAULT_INST_FIELDS = {
 	__init = function(self)
@@ -122,8 +124,11 @@ private.INST_MT = {
 			return res
 		end
 
-		-- check if it's the special __super field
+		-- check if it's the special __super field or __as method
 		if key == "__super" then
+			if not instInfo.hasSuperclass then
+				error("The class of this instance has no superclass.")
+			end
 			-- The class of the current class method we are in, or nil if we're not in a class method.
 			local methodClass = instInfo.methodClass
 			-- We can only access the superclass within a class method and will use the class which defined that method
@@ -131,11 +136,9 @@ private.INST_MT = {
 			if not methodClass then
 				error("The superclass can only be referenced within a class method.")
 			end
-			instInfo.currentClass = private.classInfo[instInfo.currentClass or methodClass].superclass
-			if not instInfo.currentClass then
-				error("No super class found.")
-			end
-			return self
+			return private.InstAs(self, private.classInfo[instInfo.currentClass or methodClass].superclass)
+		elseif key == "__as" then
+			return private.InstAs
 		end
 
 		-- reset the current class since we're not continuing the __super chain
@@ -272,6 +275,23 @@ end
 
 function private.InstIsA(inst, targetClass)
 	return private.instInfo[inst].isClassLookup[targetClass]
+end
+
+function private.InstAs(inst, targetClass)
+	local instInfo = private.instInfo[inst]
+	if not targetClass or not instInfo.isClassLookup[targetClass] then
+		error(format("Object (%s) is not an instance of the requested class (%s)!", tostring(inst), tostring(targetClass)))
+	end
+	-- For classes with no superclass, we don't go through the __index metamethod, so can't use __as
+	if not instInfo.hasSuperclass then
+		error("The class of this instance has no superclass.")
+	end
+	-- We can only access the superclass within a class method.
+	if not instInfo.methodClass then
+		error("The superclass can only be referenced within a class method.")
+	end
+	instInfo.currentClass = targetClass
+	return inst
 end
 
 function private.ClassIsA(class, targetClass)

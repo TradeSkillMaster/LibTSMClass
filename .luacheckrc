@@ -17,4 +17,4 @@ ignore = {
 -- only output files with warnings / errors
 quiet = 1
 -- exclude Tests and Libs folders
-exclude_files = { ".luacheckrc", "Tests/**" }
+exclude_files = { ".luacheckrc", "Tests/**", "LibStub/**" }
