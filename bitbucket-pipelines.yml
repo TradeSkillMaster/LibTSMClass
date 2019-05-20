@@ -1,0 +1,14 @@
+image: tradeskillmaster/bitbucket-pipeline:1.1
+clone:
+  depth: 1
+pipelines:
+  pull-requests:
+    '**':
+      # Run tests on all pull requests
+      - step:
+          name: Tests
+          script:
+            # Run Unit Tests
+            - lua Tests/Unit/TestLibTSMClass.lua -o tap
+            # Run Linter
+            - luacheck .
