@@ -45,11 +45,6 @@ local DEFAULT_INST_FIELDS = {
 -- Public Library Functions
 -- ============================================================================
 
---- Defines a new class.
--- @tparam string name The name of the class
--- @tparam[opt] class superclass The class to make this class a subclass of
--- @param[opt] ... Modifiers for the class (currently supports: `ABSTRACT`)
--- @treturn class The new class
 function LibTSMClass:DefineClass(name, superclass, ...)
 	assert(type(name) == "string", "Invalid class name: "..tostring(name), 1)
 	local abstract = false
@@ -81,12 +76,6 @@ function LibTSMClass:DefineClass(name, superclass, ...)
 	return class
 end
 
---- Instantiates a class using an existing table.
--- This can be used to preserve existing fields in the table while upgrading it to an instance of a class.
--- @tparam table tbl The table to use for the instantiated object
--- @tparam class class The class to instantiate
--- @param[opt] ... Parameters to pass to the class construtor
--- @treturn object The new class instance
 function LibTSMClass:ConstructWithTable(tbl, class, ...)
 	private.constructTbl = tbl
 	local inst = class(...)
