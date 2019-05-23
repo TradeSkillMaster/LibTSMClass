@@ -22,6 +22,7 @@ local classInst = MyClass()
 ```
 
 If a table containing existing attributes already exists, it can be converted into an instance of the class via the `LibTSMClass:ConstructWithTable()` method.
+
 ```lua
 local tbl = { existingValue = 2 }
 local classInst = LibTSMClass:ConstructWithTable(tbl, MyClass)
@@ -31,6 +32,7 @@ print(classInst.existingValue) -- prints 2
 ### Static Attributes
 
 Static fields are allowed on all classes and can be accessed by instances of the class.
+
 ```lua
 MyClass.staticValue = 31
 print(MyClass.staticValue) -- prints 31
@@ -126,11 +128,15 @@ print(subClassInst) -- prints "MySubClass with a value of 3"
 #### `__name`
 
 The `__name` attribute is provided on all classes to look up the name of the class.
+
 ```lua
 print(MyClass.__name) -- prints "MyClass"
 ```
 
+### `__dump()`
+
 All instances have a special `__dump()` method which can be used to pretty-print the fields of class for debugging. Similarly to `__tostring()`, the default implementation may be overridden in order to provide a custom implementation.
+
 ```lua
 local classInst = MyClass(0)
 classInst:__dump()
@@ -144,6 +150,7 @@ MyClass:00B8C688 {
 #### `__class`
 
 The special `__class` field is provided on every instance in order to introspect the class to which the instance belongs.
+
 ```lua
 local classInst = MyClass(0)
 print(classInst.__class) -- prints "class:MyClass"
@@ -152,6 +159,7 @@ print(classInst.__class) -- prints "class:MyClass"
 #### `__isa()`
 
 In order to test whether or not an instance belongs to a given class, the `__isa` method is provided on all instances.
+
 ```lua
 local classInst = MyClass(3)
 print(classInst:__isa(MyClass)) -- prints true
@@ -160,7 +168,8 @@ print(classInst:__isa(MySubClass)) -- prints false
 
 ### Virtual Methods
 
-One of the most powerful features of LibTSMClass is support for virtual class methods. What this means is that without a base class method, an instance of a class is still treated as its an instance of its actual class, not the base class. This is best demonstrated with an example:
+One of the most powerful features of LibTSMClass is support for virtual class methods. What this means is that within a base class method, an instance of a class is still treated as its an instance of its actual class, not the base class. This is best demonstrated with an example:
+
 ```lua
 function MyClass.GetMagicNumber(self)
 	return 99
@@ -186,7 +195,7 @@ local AbstractClass = LibTSMClass:DefineClass("AbstractClass", nil, "ABSTRACT")
 
 ### Access Restrictions (Private / Protected)
 
-All instance variables and class methods are publicly accessible. While it's possible for LibTSMClass to be extended to allow for enforcing private / protected access restrictions, it's not currently implemented in order to keep the library as simple as performant as possible. With that being said, a general convention of adding an leading underscore to things which shouldn't be used externally (i.e. private members / methods) is encouraged. If true private members are needed, another alternative is to create scope-limited lookup tables or functions without the file where the class is defined.
+All instance variables and class methods are publicly accessible. While it's possible for LibTSMClass to be extended to allow for enforcing private / protected access restrictions, it's not currently implemented in order to keep the library as simple and performant as possible. With that being said, a general convention of adding an leading underscore to things which shouldn't be used externally (i.e. private members / methods) is encouraged. If true private members are needed, another alternative is to create scope-limited lookup tables or functions within the file where the class is defined.
 
 ### Classes are Immutable and Should be Atomically Defined
 
@@ -194,7 +203,7 @@ One gotcha of LibTSMClass is that all methods and static fields of a class must 
 
 ### Highly-Performant Base Classes
 
-Inheritance is one of the most powerful uses of OOP, and LibTSMClass fully supports it. However, for cases where performance is of the utmost importance, LibTSMClass is heavily optimized to reduce the overhead of a class which does not subclass anything to be as close to direct table access as possible.
+Inheritance is one of the most powerful uses of OOP, and LibTSMClass fully supports it. However, for cases where performance is of the utmost importance, LibTSMClass is heavily optimized to reduce the overhead of a class which does not subclass anything to be as close to direct table access as possible (without metamethod calls).
 
 ## Example
 
