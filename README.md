@@ -110,7 +110,7 @@ end
 
 #### `__tostring()`
 
-Every class and instance has a special `__tostring()` method which can be used to convert it to a string. This is generally useful for debugging. Classes can override this method in order to provide an alternative implementation.
+Every class and instance has a special `__tostring()` method which can be used to convert it to a string. This is generally useful for debugging. Classes can override this method in order to provide a custom implementation.
 
 ```lua
 function MySubClass.__tostring(self)
@@ -130,7 +130,7 @@ The `__name` attribute is provided on all classes to look up the name of the cla
 print(MyClass.__name) -- prints "MyClass"
 ```
 
-All instances have a special `__dump()` method which can be used to pretty-print the fields of class for debugging.
+All instances have a special `__dump()` method which can be used to pretty-print the fields of class for debugging. Similarly to `__tostring()`, the default implementation may be overridden in order to provide a custom implementation.
 ```lua
 local classInst = MyClass(0)
 classInst:__dump()

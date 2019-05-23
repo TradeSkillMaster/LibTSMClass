@@ -14,6 +14,7 @@ setmetatable(private.instInfo, { __mode = "k" })
 local SPECIAL_PROPERTIES = {
 	__init = true,
 	__tostring = true,
+	__dump = true,
 	__class = true,
 	__isa = true,
 	__super = true,
@@ -71,6 +72,7 @@ function LibTSMClass:DefineClass(name, superclass, ...)
 				private.classInfo[class].superStatic[key] = { class = superclass, value = value }
 			end
 		end
+		private.classInfo[superclass].subclassed = true
 		superclass = superclass.__super
 	end
 	return class
@@ -170,11 +172,13 @@ private.INST_MT = {
 
 private.CLASS_MT = {
 	__newindex = function(self, key, value)
-		assert(not private.classInfo[self].static[key], "Can't modify or override static members")
+		local classInfo = private.classInfo[self]
+		assert(not classInfo.subclassed, "Can't modify classes after they are subclassed")
+		assert(not classInfo.static[key], "Can't modify or override static members")
 		assert(not RESERVED_KEYS[key], "Reserved word: "..key)
 		if type(value) == "function" then
 			-- We wrap class methods so that within them, the instance appears to be of the defining class
-			private.classInfo[self].static[key] = function(inst, ...)
+			classInfo.static[key] = function(inst, ...)
 				local instInfo = private.instInfo[inst]
 				if not instInfo.isClassLookup[self] then
 					error(format("Attempt to call class method on non-object (%s)!", tostring(inst)))
@@ -189,7 +193,7 @@ private.CLASS_MT = {
 				end
 			end
 		else
-			private.classInfo[self].static[key] = value
+			classInfo.static[key] = value
 		end
 	end,
 	__index = function(self, key)
