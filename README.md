@@ -6,9 +6,9 @@ The LibTSMClass library allows for writing objected-oriented code in lua! There 
 
 ### Class Definition
 
-To define a new class, simply use the `LibTSMClass:DefineClass()` method of the library:
+To define a new class, simply use the `LibTSMClass.DefineClass()` method of the library:
 ```lua
-local MyClass = LibTSMClass:DefineClass("MyClass")
+local MyClass = LibTSMClass.DefineClass("MyClass")
 ```
 
 This function takes at least one argument, which is the name of the class. This class name is primarily used to make debugging easier, by leveraging it in the `__tostring()` metamethod for both the class and instances of the class.
@@ -21,11 +21,11 @@ The class can be called as a function to create an instance of the class.
 local classInst = MyClass()
 ```
 
-If a table containing existing attributes already exists, it can be converted into an instance of the class via the `LibTSMClass:ConstructWithTable()` method.
+If a table containing existing attributes already exists, it can be converted into an instance of the class via the `LibTSMClass.ConstructWithTable()` method.
 
 ```lua
 local tbl = { existingValue = 2 }
-local classInst = LibTSMClass:ConstructWithTable(tbl, MyClass)
+local classInst = LibTSMClass.ConstructWithTable(tbl, MyClass)
 print(classInst.existingValue) -- prints 2
 ```
 
@@ -73,7 +73,7 @@ print(classInst:GetValue()) -- prints 42
 Classes can be sub-classed by specifying their base class when defining them. Any methods which are defined on the base class can then be overridden. The subclass is also allowed to access any methods or properties of its base class.
 
 ```lua
-local MySubClass = LibTSMClass:DefineClass("MySubClass", MyClass)
+local MySubClass = LibTSMClass.DefineClass("MySubClass", MyClass)
 function MySubClass.SayHi(self)
 	print("Hello from MySubClass")
 end
@@ -188,7 +188,7 @@ subClassInst:PrintMagicNumber() -- prints 88
 
 An abstract class is one which can't be directly instantiated. Other than this restriction, abstract classes behave exactly the same as normal classes, including the ability to be sub-classed. This is useful in order to define a common interface which multiple child classes are expected to adhere to. An abstract class is defined by passing an extra argument when defining the class as shown below:
 ```lua
-local AbstractClass = LibTSMClass:DefineClass("AbstractClass", nil, "ABSTRACT")
+local AbstractClass = LibTSMClass.DefineClass("AbstractClass", nil, "ABSTRACT")
 ```
 
 ## Limitations, Gotchas, and Notes
@@ -210,7 +210,7 @@ Inheritance is one of the most powerful uses of OOP, and LibTSMClass fully suppo
 A basic example of the library is below:
 ```lua
 local LibTSMClass = LibStub("LibTSMClass")
-local MyClass = LibTSMClass:DefineClass("MyClass")
+local MyClass = LibTSMClass.DefineClass("MyClass")
 
 function MyClass.__init(self, value)
 	self._value = value
@@ -224,7 +224,7 @@ function MyClass.SetValue(self, value)
 	self._value = value
 end
 
-local MySubClass = LibTSMClass:DefineClass("MySubClass", MyClass)
+local MySubClass = LibTSMClass.DefineClass("MySubClass", MyClass)
 
 function MySubClass.AddValue(self, value)
 	self:SetValue(self:GetValue() + value)

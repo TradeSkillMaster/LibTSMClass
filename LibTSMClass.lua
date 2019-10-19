@@ -5,9 +5,7 @@
 -- @license MIT
 -- @module LibTSMClass
 
-local LibTSMClass = LibStub:NewLibrary("LibTSMClass", 1)
-if not LibTSMClass then return end
-
+local Lib = {}
 local private = { classInfo = {}, instInfo = {}, constructTbl = nil }
 -- Set the keys as weak so that instances of classes can be GC'd (classes are never GC'd)
 setmetatable(private.instInfo, { __mode = "k" })
@@ -46,7 +44,7 @@ local DEFAULT_INST_FIELDS = {
 -- Public Library Functions
 -- ============================================================================
 
-function LibTSMClass:DefineClass(name, superclass, ...)
+function Lib.DefineClass(name, superclass, ...)
 	if type(name) ~= "string" then
 		error("Invalid class name: "..tostring(name), 2)
 	end
@@ -80,7 +78,7 @@ function LibTSMClass:DefineClass(name, superclass, ...)
 	return class
 end
 
-function LibTSMClass:ConstructWithTable(tbl, class, ...)
+function Lib.ConstructWithTable(tbl, class, ...)
 	private.constructTbl = tbl
 	local inst = class(...)
 	assert(not private.constructTbl and inst == tbl, "Internal error!")
@@ -331,4 +329,29 @@ function private.InstDump(inst)
 		end
 	end
 	print("}")
+end
+
+
+
+-- ============================================================================
+-- Initialization Code
+-- ============================================================================
+
+do
+	-- register with LibStub
+	local LibTSMClass = LibStub:NewLibrary("LibTSMClass", 1)
+	if LibTSMClass then
+		for k, v in pairs(Lib) do
+			LibTSMClass[k] = v
+		end
+	end
+
+	-- register with TSM
+	local addonName, addonTable = ...
+	if addonName == "TradeSkillMaster" then
+		addonTable.Lib.Class = {}
+		for k, v in pairs(Lib) do
+			addonTable.Lib.Class[k] = v
+		end
+	end
 end

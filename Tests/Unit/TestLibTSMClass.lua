@@ -14,7 +14,7 @@ LibTSMClass = LibStub("LibTSMClass")
 
 TestLibTSMClass = {}
 function TestLibTSMClass.TestBasic()
-	local Test = LibTSMClass:DefineClass("Test")
+	local Test = LibTSMClass.DefineClass("Test")
 	function Test.__init(self)
 		self.initialized = true
 	end
@@ -28,7 +28,7 @@ function TestLibTSMClass.TestBasic()
 end
 
 function TestLibTSMClass.TestSubClass()
-	local Test = LibTSMClass:DefineClass("Test")
+	local Test = LibTSMClass.DefineClass("Test")
 	function Test.__init(self)
 		self.initialized = true
 		self.n = 2
@@ -40,7 +40,7 @@ function TestLibTSMClass.TestSubClass()
 		return ...
 	end
 
-	local TestSub = LibTSMClass:DefineClass("TestSub", Test)
+	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
 	function TestSub.__init(self)
 		self.__super:__init()
 		self.subInitialized = true
@@ -72,10 +72,10 @@ function TestLibTSMClass.TestSubClass()
 end
 
 function TestLibTSMClass.TestStatic()
-	local Test = LibTSMClass:DefineClass("Test")
+	local Test = LibTSMClass.DefineClass("Test")
 	Test.staticX = 39
 
-	local TestSub = LibTSMClass:DefineClass("TestSub", Test)
+	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
 	TestSub.staticY = 32
 
 	local testInst = Test()
@@ -91,7 +91,7 @@ function TestLibTSMClass.TestStatic()
 end
 
 function TestLibTSMClass.TestVirtual()
-	local Test = LibTSMClass:DefineClass("Test")
+	local Test = LibTSMClass.DefineClass("Test")
 	function Test.VirtualMethod(self)
 		return 111
 	end
@@ -102,7 +102,7 @@ function TestLibTSMClass.TestVirtual()
 		return self:VirtualMethod2()
 	end
 
-	local TestSub = LibTSMClass:DefineClass("TestSub", Test)
+	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
 	function TestSub.VirtualMethod(self)
 		return 777
 	end
@@ -120,7 +120,7 @@ end
 function TestLibTSMClass.TestAsAndSuper()
 	local A, B, C = nil, nil, nil
 
-	A = LibTSMClass:DefineClass("A")
+	A = LibTSMClass.DefineClass("A")
 	function A.GetLetter(self)
 		return "A"
 	end
@@ -140,7 +140,7 @@ function TestLibTSMClass.TestAsAndSuper()
 		return self:__as(C):GetLetter()
 	end
 
-	B = LibTSMClass:DefineClass("B", A)
+	B = LibTSMClass.DefineClass("B", A)
 	function B.GetLetter(self)
 		return "B"
 	end
@@ -160,7 +160,7 @@ function TestLibTSMClass.TestAsAndSuper()
 		return self:__as(C):GetLetter()
 	end
 
-	C = LibTSMClass:DefineClass("C", B)
+	C = LibTSMClass.DefineClass("C", B)
 	function C.GetLetter(self)
 		return "C"
 	end
