@@ -121,6 +121,9 @@ function TestLibTSMClass.TestAsAndSuper()
 	local A, B, C = nil, nil, nil
 
 	A = LibTSMClass.DefineClass("A")
+	function A.__tostring(self)
+		return "A_STR"
+	end
 	function A.GetLetter(self)
 		return "A"
 	end
@@ -141,6 +144,9 @@ function TestLibTSMClass.TestAsAndSuper()
 	end
 
 	B = LibTSMClass.DefineClass("B", A)
+	function B.__tostring(self)
+		return "B_STR"
+	end
 	function B.GetLetter(self)
 		return "B"
 	end
@@ -161,6 +167,9 @@ function TestLibTSMClass.TestAsAndSuper()
 	end
 
 	C = LibTSMClass.DefineClass("C", B)
+	function C.__tostring(self)
+		return "C_STR/"..self.__super:__tostring().."/"..self:__as(A):__tostring()
+	end
 	function C.GetLetter(self)
 		return "C"
 	end
@@ -181,6 +190,7 @@ function TestLibTSMClass.TestAsAndSuper()
 	end
 
 	local testCInst = C()
+	luaunit.assertEquals(tostring(testCInst), "C_STR/B_STR/A_STR")
 	luaunit.assertEquals(testCInst:GetLetter(), "C")
 	luaunit.assertEquals(testCInst:CDoTestSuper1(), "B")
 	luaunit.assertEquals(testCInst:CDoTestSuper2(), "A")
@@ -199,6 +209,7 @@ function TestLibTSMClass.TestAsAndSuper()
 	luaunit.assertEquals(testCInst:ADoTestAsC(), "C")
 
 	local testBInst = B()
+	luaunit.assertEquals(tostring(testBInst), "B_STR")
 	luaunit.assertEquals(testBInst:GetLetter(), "B")
 	luaunit.assertEquals(testCInst:BDoTestSuper1(), "A")
 	luaunit.assertError(function() testBInst:ADoTestSuper2() end)
@@ -207,6 +218,7 @@ function TestLibTSMClass.TestAsAndSuper()
 	luaunit.assertError(function() testBInst:BDoTestAsC() end)
 
 	local testAInst = A()
+	luaunit.assertEquals(tostring(testAInst), "A_STR")
 	luaunit.assertEquals(testAInst:GetLetter(), "A")
 	luaunit.assertError(function() testAInst:ADoTestSuper1() end)
 	luaunit.assertError(function() testAInst:ADoTestSuper2() end)
