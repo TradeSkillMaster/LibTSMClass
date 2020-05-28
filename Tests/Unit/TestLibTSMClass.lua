@@ -73,10 +73,19 @@ end
 
 function TestLibTSMClass.TestStatic()
 	local Test = LibTSMClass.DefineClass("Test")
+	function Test.__static.GetZ()
+		return 52
+	end
 	Test.staticX = 39
 
 	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
+	function TestSub.__static.GetZ()
+		return 77
+	end
 	TestSub.staticY = 32
+
+	luaunit.assertEquals(Test.GetZ(), 52)
+	luaunit.assertEquals(TestSub.GetZ(), 77)
 
 	local testInst = Test()
 	luaunit.assertEquals(testInst.staticX, 39)
