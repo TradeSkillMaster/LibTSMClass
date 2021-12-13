@@ -18,6 +18,10 @@ local SPECIAL_PROPERTIES = {
 	__super = true,
 	__name = true,
 	__as = true,
+	__static = true,
+	__private = true,
+	__protected = true,
+	__abstract = true,
 }
 local RESERVED_KEYS = {
 	__super = true,
@@ -25,6 +29,11 @@ local RESERVED_KEYS = {
 	__class = true,
 	__name = true,
 	__as = true,
+	__static = true,
+	__private = true,
+	__protected = true,
+	__abstract = true,
+	__closure = true,
 }
 local DEFAULT_INST_FIELDS = {
 	__init = function(self)
@@ -65,7 +74,10 @@ function Lib.DefineClass(name, superclass, ...)
 		superStatic = {},
 		superclass = superclass,
 		abstract = abstract,
-		isStaticReference = false,
+		referenceType = nil,
+		subclassed = false,
+		hasMethodProperties = false,
+		abstractMethods = nil, -- set as needed
 	}
 	while superclass do
 		for key, value in pairs(private.classInfo[superclass].static) do
@@ -118,7 +130,7 @@ private.INST_MT = {
 			return res
 		end
 
-		-- check if it's the special __super field or __as method
+		-- check if it's a special field / method
 		if key == "__super" then
 			if not instInfo.hasSuperclass then
 				error("The class of this instance has no superclass.", 2)
@@ -133,6 +145,8 @@ private.INST_MT = {
 			return private.InstAs(self, private.classInfo[instInfo.currentClass or methodClass].superclass)
 		elseif key == "__as" then
 			return private.InstAs
+		elseif key == "__closure" then
+			return private.InstClosure
 		end
 
 		-- reset the current class since we're not continuing the __super chain
@@ -186,24 +200,45 @@ private.CLASS_MT = {
 			error("Reserved word: "..tostring(key), 2)
 		end
 		local isMethod = type(value) == "function"
-		if classInfo.isStaticReference then
+		if classInfo.referenceType == "STATIC" then
 			-- we are defining a static class function, not a class method
 			assert(isMethod)
-			classInfo.isStaticReference = false
+			classInfo.referenceType = nil
 			isMethod = false
 		end
 		if isMethod then
+			local isPrivate, isProtected = false, false
+			if classInfo.referenceType == "PRIVATE" then
+				isPrivate = true
+			elseif classInfo.referenceType == "PROTECTED" then
+				isProtected = true
+			elseif classInfo.referenceType == "ABSTRACT" then
+				classInfo.abstractMethods = classInfo.abstractMethods or {}
+				classInfo.abstractMethods[key] = true
+				classInfo.referenceType = nil
+				return
+			end
+			if isPrivate or isProtected then
+				classInfo.referenceType = nil
+				classInfo.hasMethodProperties = true
+			end
 			-- We wrap class methods so that within them, the instance appears to be of the defining class
 			classInfo.static[key] = function(inst, ...)
 				local instInfo = private.instInfo[inst]
-				if not instInfo.isClassLookup[self] then
+				if not instInfo or not instInfo.isClassLookup[self] then
 					error(format("Attempt to call class method on non-object (%s)!", tostring(inst)), 2)
 				end
-				if not instInfo.hasSuperclass then
+				if not classInfo.hasMethodProperties and not instInfo.hasSuperclass then
 					-- don't need to worry about methodClass so just call the function directly
 					return value(inst, ...)
 				else
 					local prevMethodClass = instInfo.methodClass
+					if isPrivate and prevMethodClass ~= self then
+						error(format("Attempting to call private method (%s) from outside of class", key), 2)
+					end
+					if isProtected and prevMethodClass == nil then
+						error(format("Attempting to call protected method (%s) from outside of class", key), 2)
+					end
 					instInfo.methodClass = self
 					return private.InstMethodReturnHelper(prevMethodClass, instInfo, value(inst, ...))
 				end
@@ -211,10 +246,11 @@ private.CLASS_MT = {
 		else
 			classInfo.static[key] = value
 		end
+		assert(not classInfo.referenceType)
 	end,
 	__index = function(self, key)
 		local classInfo = private.classInfo[self]
-		assert(not classInfo.isStaticReference)
+		assert(classInfo.referenceType == nil)
 		-- check if it's the special __isa method which all classes implicitly have
 		if key == "__isa" then
 			return private.ClassIsA
@@ -223,7 +259,16 @@ private.CLASS_MT = {
 		elseif key == "__super" then
 			return classInfo.superclass
 		elseif key == "__static" then
-			classInfo.isStaticReference = true
+			classInfo.referenceType = "STATIC"
+			return self
+		elseif key == "__private" then
+			classInfo.referenceType = "PRIVATE"
+			return self
+		elseif key == "__protected" then
+			classInfo.referenceType = "PROTECTED"
+			return self
+		elseif key == "__abstract" then
+			classInfo.referenceType = "ABSTRACT"
 			return self
 		elseif classInfo.static[key] ~= nil then
 			return classInfo.static[key]
@@ -241,21 +286,22 @@ private.CLASS_MT = {
 		local inst = private.constructTbl or {}
 		local instStr = strmatch(tostring(inst), "table:[^0-9a-fA-F]*([0-9a-fA-F]+)")
 		setmetatable(inst, private.INST_MT)
-		local hasSuperclass = private.classInfo[self].superclass and true or false
+		local classInfo = private.classInfo[self]
+		local hasSuperclass = classInfo.superclass and true or false
 		private.instInfo[inst] = {
 			class = self,
 			fields = {
 				__class = self,
 				__isa = private.InstIsA,
 			},
-			str = private.classInfo[self].name..":"..instStr,
+			str = classInfo.name..":"..instStr,
 			isClassLookup = {},
 			hasSuperclass = hasSuperclass,
 			currentClass = nil,
 		}
 		if not hasSuperclass then
 			-- set the static members directly on this object for better performance
-			for key, value in pairs(private.classInfo[self].static) do
+			for key, value in pairs(classInfo.static) do
 				if not SPECIAL_PROPERTIES[key] then
 					rawset(inst, key, value)
 				end
@@ -265,6 +311,13 @@ private.CLASS_MT = {
 		while c do
 			private.instInfo[inst].isClassLookup[c] = true
 			c = private.classInfo[c].superclass
+			if c and private.classInfo[c] and private.classInfo[c].abstractMethods then
+				for methodName in pairs(private.classInfo[c].abstractMethods) do
+					if type(classInfo.static[methodName]) ~= "function" then
+						error("Missing abstract method: "..tostring(methodName), 2)
+					end
+				end
+			end
 		end
 		if private.constructTbl then
 			-- re-set all the object attributes through the proper metamethod
@@ -287,6 +340,13 @@ private.CLASS_MT = {
 -- ============================================================================
 -- Helper Functions
 -- ============================================================================
+
+function private.ClassIsA(class, targetClass)
+	while class do
+		if class == targetClass then return true end
+		class = class.__super
+	end
+end
 
 function private.InstMethodReturnHelper(class, instInfo, ...)
 	-- reset methodClass now that the function returned
@@ -317,10 +377,26 @@ function private.InstAs(inst, targetClass)
 	return inst
 end
 
-function private.ClassIsA(class, targetClass)
-	while class do
-		if class == targetClass then return true end
-		class = class.__super
+function private.InstClosure(inst, methodName)
+	local instInfo = private.instInfo[inst]
+	-- The class of the current class method we are in, or nil if we're not in a class method.
+	if not instInfo.methodClass then
+		error("Closures can only be created within a class method.", 2)
+	end
+	local class = instInfo.methodClass
+	local method = private.classInfo[class].static[methodName]
+	if type(method) ~= "function" then
+		error("Attempt to create closure for non-method field", 2)
+	end
+	return function(...)
+		if instInfo.methodClass then
+			-- We're already within a method of class, so just call the method normally
+			return method(inst, ...)
+		else
+			-- Pretend we are within a class
+			instInfo.methodClass = class
+			return private.InstMethodReturnHelper(nil, instInfo, method(inst, ...))
+		end
 	end
 end
 

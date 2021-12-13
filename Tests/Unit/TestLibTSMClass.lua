@@ -236,6 +236,104 @@ function TestLibTSMClass.TestAsAndSuper()
 	luaunit.assertError(function() testAInst:ADoTestAsC() end)
 end
 
+function TestLibTSMClass.TestAbstractMethod()
+	local Test = LibTSMClass.DefineClass("Test", nil, "ABSTRACT")
+	function Test.__init(self)
+		self.initialized = true
+		self.n = 2
+	end
+	function Test.GetMagicNumber(self)
+		return 0
+	end
+	function Test.GetMagicPhrase(self)
+		return self:GetText()
+	end
+	function Test.__abstract.GetText()
+	end
+
+	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
+	function TestSub.__init(self)
+		self.__super:__init()
+		self.subInitialized = true
+	end
+	function TestSub.GetMagicNumber(self)
+		return self.__super:GetMagicNumber() + 1
+	end
+
+	luaunit.assertErrorMsgContains("Missing abstract method: GetText", function() TestSub() end)
+
+	function TestSub.GetText(self)
+		return "TEXT"
+	end
+	function TestSub.GetTextFail(self)
+		return self.__super:GetText()
+	end
+
+	local inst = TestSub()
+	luaunit.assertEquals(inst:GetText(), "TEXT")
+	luaunit.assertError(function() inst:GetTextFail() end)
+end
+
+function TestLibTSMClass.TestPrivateMethod()
+	local Test = LibTSMClass.DefineClass("Test")
+	function Test.__private.GetMagicNumber(self)
+		return 0
+	end
+	function Test.GetMagicPhrase(self)
+		return "NUMBER: "..self:GetMagicNumber()
+	end
+
+	local inst = Test()
+	luaunit.assertErrorMsgContains("Attempting to call private method (GetMagicNumber) from outside of class", function() inst:GetMagicNumber() end)
+	luaunit.assertEquals(inst:GetMagicPhrase(), "NUMBER: 0")
+end
+
+function TestLibTSMClass.TestProtectedMethod()
+	local Test = LibTSMClass.DefineClass("Test")
+	function Test.__protected._GetNumber(self)
+		return 4
+	end
+
+	local instTest = Test()
+	luaunit.assertError(function() instTest:_GetNumber() end)
+
+	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
+	function TestSub.GetMagicNumber(self)
+		return self:_GetNumber()
+	end
+
+	local instTestSub = TestSub()
+	luaunit.assertEquals(instTestSub:GetMagicNumber(), 4)
+	luaunit.assertError(function() instTestSub:_GetNumber() end)
+end
+
+function TestLibTSMClass.TestClosure()
+	local Test = LibTSMClass.DefineClass("Test")
+	function Test.__init(self)
+		self.testFunc = self:__closure("_GetNumber")
+	end
+	function Test.__private._GetNumber(self)
+		return 4
+	end
+	function Test.CallTestFunc(self)
+		return self.testFunc()
+	end
+
+	local instTest = Test()
+	luaunit.assertEquals(instTest.testFunc(), 4)
+	luaunit.assertEquals(instTest:CallTestFunc(), 4)
+
+	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
+	function TestSub.SubCallTestFunc(self)
+		return self.testFunc()
+	end
+
+	local instTestSub = TestSub()
+	luaunit.assertEquals(instTestSub.testFunc(), 4)
+	luaunit.assertEquals(instTestSub:CallTestFunc(), 4)
+	luaunit.assertErrorMsgContains("Attempting to call private method (_GetNumber) from outside of class", function() instTestSub:SubCallTestFunc() end)
+end
+
 
 
 os.exit(luaunit.LuaUnit.run())
