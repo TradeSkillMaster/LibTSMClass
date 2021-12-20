@@ -298,6 +298,7 @@ private.CLASS_MT = {
 			isClassLookup = {},
 			hasSuperclass = hasSuperclass,
 			currentClass = nil,
+			closures = {},
 		}
 		if not hasSuperclass then
 			-- set the static members directly on this object for better performance
@@ -384,20 +385,25 @@ function private.InstClosure(inst, methodName)
 		error("Closures can only be created within a class method.", 2)
 	end
 	local class = instInfo.methodClass
-	local method = private.classInfo[class].static[methodName]
-	if type(method) ~= "function" then
+	local methodFunc = private.classInfo[class].static[methodName]
+	if type(methodFunc) ~= "function" then
 		error("Attempt to create closure for non-method field", 2)
 	end
-	return function(...)
-		if instInfo.methodClass then
-			-- We're already within a method of class, so just call the method normally
-			return method(inst, ...)
-		else
-			-- Pretend we are within a class
-			instInfo.methodClass = class
-			return private.InstMethodReturnHelper(nil, instInfo, method(inst, ...))
+	local cacheKey = tostring(class).."."..methodName
+	if not instInfo.closures[cacheKey] then
+		instInfo.closures[cacheKey] = function(...)
+			if instInfo.methodClass == class then
+				-- We're already within a method of the class, so just call the method normally
+				return methodFunc(inst, ...)
+			else
+				-- Pretend we are within the class which created the closure
+				local prevClass = instInfo.methodClass
+				instInfo.methodClass = class
+				return private.InstMethodReturnHelper(prevClass, instInfo, methodFunc(inst, ...))
+			end
 		end
 	end
+	return instInfo.closures[cacheKey]
 end
 
 function private.InstDump(inst)

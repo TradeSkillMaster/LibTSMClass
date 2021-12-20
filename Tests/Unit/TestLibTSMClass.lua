@@ -331,7 +331,7 @@ function TestLibTSMClass.TestClosure()
 	local instTestSub = TestSub()
 	luaunit.assertEquals(instTestSub.testFunc(), 4)
 	luaunit.assertEquals(instTestSub:CallTestFunc(), 4)
-	luaunit.assertErrorMsgContains("Attempting to call private method (_GetNumber) from outside of class", function() instTestSub:SubCallTestFunc() end)
+	luaunit.assertEquals(instTestSub:SubCallTestFunc(), 4)
 end
 
 
