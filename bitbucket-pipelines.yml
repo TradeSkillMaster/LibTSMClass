@@ -1,38 +1,21 @@
-image: tradeskillmaster/bitbucket-pipeline:1.1
+image: tradeskillmaster/bitbucket-pipeline:1.7
 clone:
   depth: 1
 pipelines:
-  branches:
-    'master':
-      - step:
-          name: Generate and Upload Code Coverage
-          script:
-            # Install luacov
-            - git clone https://github.com/keplerproject/luacov /tmp/luacov
-            - cd /tmp/luacov && luarocks make && cd $BITBUCKET_CLONE_DIR
-            # Generate code coverage
-            - lua -lluacov Tests/Unit/TestLibTSMClass.lua
-            - luacov
-            # Uploade to codecov
-            - curl -Os https://uploader.codecov.io/latest/linux/codecov
-            - chmod +x codecov
-            - ./codecov -t ${CODECOV_TOKEN}
-  pull-requests:
-    '**':
-      - step:
-          name: Run Tests, Lint, and Upload Code Coverage
-          script:
-            # Install luacov
-            - git clone https://github.com/keplerproject/luacov /tmp/luacov
-            - cd /tmp/luacov && luarocks make && cd $BITBUCKET_CLONE_DIR
-            # Run Unit Tests
-            - lua Tests/Unit/TestLibTSMClass.lua -o tap
-            # Lint
-            - luacheck .
-            # Generate code coverage
-            - lua -lluacov Tests/Unit/TestLibTSMClass.lua
-            - luacov
-            # Uploade to codecov
-            - curl -Os https://uploader.codecov.io/latest/linux/codecov
-            - chmod +x codecov
-            - ./codecov -t ${CODECOV_TOKEN}
+  default:
+    - step:
+        name: Run Tests, Lint, and Upload Code Coverage
+        script:
+          # Run Unit Tests
+          - lua Tests/Unit/TestLibTSMClass.lua -o tap
+          # Lint
+          - luacheck .
+          # Generate code coverage
+          - lua -lluacov Tests/Unit/TestLibTSMClass.lua
+          - luacov
+          # Uploade to codecov
+          - curl -Os https://uploader.codecov.io/latest/linux/codecov
+          - chmod +x codecov
+          - ./codecov -t ${CODECOV_TOKEN}
+          # Uploade to coveralls.io
+          - luacov-coveralls -t ${COVERALLS_IO_TOKEN}
