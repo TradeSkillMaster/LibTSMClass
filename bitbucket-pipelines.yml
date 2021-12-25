@@ -2,18 +2,32 @@ image: tradeskillmaster/bitbucket-pipeline:1.1
 clone:
   depth: 1
 pipelines:
+  branches:
+    'master':
+      - step:
+          name: Generate and Upload Code Coverage
+          script:
+            # Install luacov
+            - git clone https://github.com/keplerproject/luacov /tmp/luacov
+            - cd /tmp/luacov && luarocks make && cd $BITBUCKET_CLONE_DIR
+            # Generate code coverage
+            - lua -lluacov Tests/Unit/TestLibTSMClass.lua
+            - luacov
+            # Uploade to codecov
+            - curl -Os https://uploader.codecov.io/latest/linux/codecov
+            - chmod +x codecov
+            - ./codecov -t ${CODECOV_TOKEN}
   pull-requests:
     '**':
-      # Run tests on all pull requests
       - step:
-          name: Tests
+          name: Run Tests, Lint, and Upload Code Coverage
           script:
             # Install luacov
             - git clone https://github.com/keplerproject/luacov /tmp/luacov
             - cd /tmp/luacov && luarocks make && cd $BITBUCKET_CLONE_DIR
             # Run Unit Tests
             - lua Tests/Unit/TestLibTSMClass.lua -o tap
-            # Run Linter
+            # Lint
             - luacheck .
             # Generate code coverage
             - lua -lluacov Tests/Unit/TestLibTSMClass.lua
