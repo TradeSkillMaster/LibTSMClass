@@ -5,6 +5,7 @@
 -- @license MIT
 -- @module LibTSMClass
 
+local MINOR_REVISION = 2
 local Lib = {}
 local private = { classInfo = {}, instInfo = {}, constructTbl = nil, tempTable = {} }
 -- Set the keys as weak so that instances of classes can be GC'd (classes are never GC'd)
@@ -57,6 +58,9 @@ function Lib.DefineClass(name, superclass, ...)
 	if type(name) ~= "string" then
 		error("Invalid class name: "..tostring(name), 2)
 	end
+	if superclass ~= nil and (type(superclass) ~= "table" or not private.classInfo[superclass]) then
+		error("Invalid superclass: "..tostring(superclass), 2)
+	end
 	local abstract = false
 	for i = 1, select('#', ...) do
 		local modifier = select(i, ...)
@@ -93,7 +97,7 @@ end
 function Lib.ConstructWithTable(tbl, class, ...)
 	private.constructTbl = tbl
 	local inst = class(...)
-	assert(not private.constructTbl and inst == tbl, "Internal error!")
+	assert(not private.constructTbl and inst == tbl, "Internal error")
 	return inst
 end
 
@@ -132,14 +136,14 @@ private.INST_MT = {
 		-- check if it's a special field / method
 		if key == "__super" then
 			if not instInfo.hasSuperclass then
-				error("The class of this instance has no superclass.", 2)
+				error("The class of this instance has no superclass", 2)
 			end
 			-- The class of the current class method we are in, or nil if we're not in a class method.
 			local methodClass = instInfo.methodClass
 			-- We can only access the superclass within a class method and will use the class which defined that method
 			-- as the base class to jump to the superclass of, regardless of what class the instance actually is.
 			if not methodClass then
-				error("The superclass can only be referenced within a class method.", 2)
+				error("The superclass can only be referenced within a class method", 2)
 			end
 			return private.InstAs(self, private.classInfo[instInfo.currentClass or methodClass].superclass)
 		elseif key == "__as" then
@@ -189,7 +193,7 @@ private.INST_MT = {
 private.CLASS_MT = {
 	__newindex = function(self, key, value)
 		if type(key) ~= "string" then
-			error("Can't index class with non-string property", 2)
+			error("Can't index class with non-string key", 2)
 		end
 		local classInfo = private.classInfo[self]
 		if classInfo.subclassed then
@@ -207,8 +211,10 @@ private.CLASS_MT = {
 		if methodProperty == "STATIC" then
 			-- we are defining a static class function, not a class method
 			if not isMethod then
-				error("Unecessary __static for non-function class property", 2)
+				error("Unnecessary __static for non-function class property", 2)
 			end
+			classInfo.methodProperties = classInfo.methodProperties or {}
+			classInfo.methodProperties[key] = methodProperty
 			isMethod = false
 		end
 		if isMethod then
@@ -242,7 +248,10 @@ private.CLASS_MT = {
 						-- Can't override private methods
 						error(format("Can't override private superclass method (%s)", key), 2)
 					else
+						-- luacov: disable
+						-- Should never get here
 						error("Unexpected superclassMethodProperty: "..tostring(superclassMethodProperty))
+						-- luacov: enable
 					end
 					-- Just need to go up the superclass tree until we find the first one which references this key
 					break
@@ -261,14 +270,17 @@ private.CLASS_MT = {
 					-- Just need to set the property
 					return
 				else
+					-- luacov: disable
+					-- Should never get here
 					error("Unknown method property: "..tostring(methodProperty))
+					-- luacov: enable
 				end
 			end
 			-- We wrap class methods so that within them, the instance appears to be of the defining class
 			classInfo.static[key] = function(inst, ...)
 				local instInfo = private.instInfo[inst]
 				if not instInfo or not instInfo.isClassLookup[self] then
-					error(format("Attempt to call class method on non-object (%s)!", tostring(inst)), 2)
+					error(format("Attempt to call class method on non-object (%s)", tostring(inst)), 2)
 				end
 				if not classInfo.methodProperties and not instInfo.hasSuperclass then
 					-- don't need to worry about methodClass so just call the function directly
@@ -325,7 +337,7 @@ private.CLASS_MT = {
 	end,
 	__call = function(self, ...)
 		if private.classInfo[self].abstract then
-			error("Attempting to instantiate an abstract class!", 2)
+			error("Attempting to instantiate an abstract class", 2)
 		end
 		-- Create a new instance of this class
 		local inst = private.constructTbl or {}
@@ -379,7 +391,7 @@ private.CLASS_MT = {
 			private.constructTbl = nil
 		end
 		if select("#", inst:__init(...)) > 0 then
-			error("__init must not return any values", 2)
+			error("__init(...) must not return any values", 2)
 		end
 		return inst
 	end,
@@ -411,20 +423,22 @@ end
 
 function private.InstAs(inst, targetClass)
 	local instInfo = private.instInfo[inst]
-	instInfo.currentClass = targetClass
+	-- Clear currentClass while we perform our checks so we can better recover from errors
+	instInfo.currentClass = nil
 	if not targetClass then
-		error(format("Requested class does not exist!"), 2)
+		error(format("Requested class does not exist"), 2)
 	elseif not instInfo.isClassLookup[targetClass] then
-		error(format("Object is not an instance of the requested class (%s)!", tostring(targetClass)), 2)
+		error(format("Object is not an instance of the requested class (%s)", tostring(targetClass)), 2)
 	end
 	-- For classes with no superclass, we don't go through the __index metamethod, so can't use __as
 	if not instInfo.hasSuperclass then
-		error("The class of this instance has no superclass.", 2)
+		error("The class of this instance has no superclass", 2)
 	end
 	-- We can only access the superclass within a class method.
 	if not instInfo.methodClass then
-		error("The superclass can only be referenced within a class method.", 2)
+		error("The superclass can only be referenced within a class method", 2)
 	end
+	instInfo.currentClass = targetClass
 	return inst
 end
 
@@ -432,7 +446,7 @@ function private.InstClosure(inst, methodName)
 	local instInfo = private.instInfo[inst]
 	-- The class of the current class method we are in, or nil if we're not in a class method.
 	if not instInfo.methodClass then
-		error("Closures can only be created within a class method.", 2)
+		error("Closures can only be created within a class method", 2)
 	end
 	local class = instInfo.methodClass
 	local methodFunc = private.classInfo[class].static[methodName]
@@ -489,19 +503,10 @@ end
 
 do
 	-- register with LibStub
-	local libStubTbl = LibStub:NewLibrary("LibTSMClass", 1)
+	local libStubTbl = LibStub:NewLibrary("LibTSMClass", MINOR_REVISION)
 	if libStubTbl then
 		for k, v in pairs(Lib) do
 			libStubTbl[k] = v
-		end
-	end
-
-	-- register with TSM
-	local addonName, addonTable = ...
-	if addonName == "TradeSkillMaster" then
-		local tsmModuleTbl = addonTable.Init("LibTSMClass")
-		for k, v in pairs(Lib) do
-			tsmModuleTbl[k] = v
 		end
 	end
 end
