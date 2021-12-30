@@ -1,9 +1,6 @@
 -- test framework
 luaunit = require('Tests.Unit.Include.luaunit')
-
--- wow globals
-strmatch = string.match
-format = string.format
+require('Tests.Unit.Include.wowunit')
 
 -- code under test
 require('LibStub.LibStub')
@@ -16,15 +13,22 @@ TestLibTSMClass = {}
 function TestLibTSMClass.TestBasic()
 	local Test = LibTSMClass.DefineClass("Test")
 	function Test.__init(self)
-		self.initialized = true
+		if not self.initialized then
+			self.initialized = true
+			self.value = 2
+		end
 	end
-	function Test.GetMagicNumber(self)
-		return 0
+	function Test.GetValue(self)
+		return self.value
 	end
 
 	local testInst = Test()
 	luaunit.assertTrue(testInst.initialized)
-	luaunit.assertEquals(testInst:GetMagicNumber(), 0)
+	luaunit.assertEquals(testInst:GetValue(), 2)
+
+	local testInst2 = LibTSMClass.ConstructWithTable({ initialized = true, value = 5 }, Test)
+	luaunit.assertTrue(testInst2.initialized)
+	luaunit.assertEquals(testInst2:GetValue(), 5)
 end
 
 function TestLibTSMClass.TestSubClass()
@@ -248,7 +252,10 @@ function TestLibTSMClass.TestAbstractMethod()
 	function Test.GetMagicPhrase(self)
 		return self:GetText()
 	end
-	function Test.__abstract.GetText()
+	function Test.__abstract._GetTextImpl()
+	end
+	function Test.GetText(self)
+		return self:_GetTextImpl()
 	end
 
 	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
@@ -260,13 +267,13 @@ function TestLibTSMClass.TestAbstractMethod()
 		return self.__super:GetMagicNumber() + 1
 	end
 
-	luaunit.assertErrorMsgContains("Missing abstract method: GetText", function() TestSub() end)
+	luaunit.assertErrorMsgContains("Missing abstract method: _GetTextImpl", function() TestSub() end)
 
-	function TestSub.GetText(self)
+	function TestSub.__protected._GetTextImpl(self)
 		return "TEXT"
 	end
 	function TestSub.GetTextFail(self)
-		return self.__super:GetText()
+		return self.__super:_GetTextImpl()
 	end
 
 	local inst = TestSub()
@@ -294,13 +301,22 @@ function TestLibTSMClass.TestProtectedMethod()
 		return 4
 	end
 
+	local Test2 = LibTSMClass.DefineClass("Test2")
+	function Test2.GetNumber(self, test)
+		return test:_GetNumber()
+	end
+
 	local instTest = Test()
-	luaunit.assertError(function() instTest:_GetNumber() end)
+	luaunit.assertErrorMsgContains("Attempting to call protected method (_GetNumber) from outside of class", function() instTest:_GetNumber() end)
+
+	local instTest2 = Test2()
+	luaunit.assertErrorMsgContains("Attempting to call protected method (_GetNumber) from outside of class", function() instTest2:GetNumber(instTest) end)
 
 	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
 	function TestSub.GetMagicNumber(self)
 		return self:_GetNumber()
 	end
+	luaunit.assertErrorMsgContains("", function() TestSub._GetNumber = function(self) end end)
 
 	local instTestSub = TestSub()
 	luaunit.assertEquals(instTestSub:GetMagicNumber(), 4)

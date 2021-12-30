@@ -6,7 +6,7 @@
 -- @module LibTSMClass
 
 local Lib = {}
-local private = { classInfo = {}, instInfo = {}, constructTbl = nil }
+local private = { classInfo = {}, instInfo = {}, constructTbl = nil, tempTable = {} }
 -- Set the keys as weak so that instances of classes can be GC'd (classes are never GC'd)
 setmetatable(private.instInfo, { __mode = "k" })
 local SPECIAL_PROPERTIES = {
@@ -76,8 +76,7 @@ function Lib.DefineClass(name, superclass, ...)
 		abstract = abstract,
 		referenceType = nil,
 		subclassed = false,
-		hasMethodProperties = false,
-		abstractMethods = nil, -- set as needed
+		methodProperties = nil, -- set as needed
 	}
 	while superclass do
 		for key, value in pairs(private.classInfo[superclass].static) do
@@ -189,6 +188,9 @@ private.INST_MT = {
 
 private.CLASS_MT = {
 	__newindex = function(self, key, value)
+		if type(key) ~= "string" then
+			error("Can't index class with non-string property", 2)
+		end
 		local classInfo = private.classInfo[self]
 		if classInfo.subclassed then
 			error("Can't modify classes after they are subclassed", 2)
@@ -197,30 +199,70 @@ private.CLASS_MT = {
 			error("Can't modify or override static members", 2)
 		end
 		if RESERVED_KEYS[key] then
-			error("Reserved word: "..tostring(key), 2)
+			error("Reserved word: "..key, 2)
 		end
 		local isMethod = type(value) == "function"
-		if classInfo.referenceType == "STATIC" then
+		local methodProperty = classInfo.referenceType
+		classInfo.referenceType = nil
+		if methodProperty == "STATIC" then
 			-- we are defining a static class function, not a class method
-			assert(isMethod)
-			classInfo.referenceType = nil
+			if not isMethod then
+				error("Unecessary __static for non-function class property", 2)
+			end
 			isMethod = false
 		end
 		if isMethod then
-			local isPrivate, isProtected = false, false
-			if classInfo.referenceType == "PRIVATE" then
-				isPrivate = true
-			elseif classInfo.referenceType == "PROTECTED" then
-				isProtected = true
-			elseif classInfo.referenceType == "ABSTRACT" then
-				classInfo.abstractMethods = classInfo.abstractMethods or {}
-				classInfo.abstractMethods[key] = true
-				classInfo.referenceType = nil
-				return
+			local superclass = classInfo.superclass
+			while superclass do
+				local superclassInfo = private.classInfo[superclass]
+				local superclassMethodProperty = superclassInfo.methodProperties and superclassInfo.methodProperties[key] or nil
+				if superclassInfo.static[key] ~= nil or superclassMethodProperty ~= nil then
+					if superclassInfo.static[key] ~= nil and type(superclassInfo.static[key]) ~= "function" then
+						error(format("Attempting to override non-method superclass property (%s) with method", key), 2)
+					end
+					if superclassMethodProperty == nil then
+						-- Can only override public methods with public methods
+						if methodProperty ~= nil then
+							error(format("Overriding a public superclass method (%s) can only be done with a public method", key), 2)
+						end
+					elseif superclassMethodProperty == "ABSTRACT" then
+						-- Can only override abstract methods with protected methods
+						if methodProperty ~= "PROTECTED" then
+							error(format("Overriding an abstract superclass method (%s) can only be done with a protected method", key), 2)
+						end
+					elseif superclassMethodProperty == "PROTECTED" then
+						-- Can only override protected methods with protected methods
+						if methodProperty ~= "PROTECTED" then
+							error(format("Overriding a protected superclass method (%s) can only be done with a protected method", key), 2)
+						end
+					elseif superclassMethodProperty == "STATIC" then
+						-- Can't override static properties with methods
+						error(format("Can't override static superclass property (%s) with method", key), 2)
+					elseif superclassMethodProperty == "PRIVATE" then
+						-- Can't override private methods
+						error(format("Can't override private superclass method (%s)", key), 2)
+					else
+						error("Unexpected superclassMethodProperty: "..tostring(superclassMethodProperty))
+					end
+					-- Just need to go up the superclass tree until we find the first one which references this key
+					break
+				end
+				superclass = superclassInfo.superclass
 			end
-			if isPrivate or isProtected then
-				classInfo.referenceType = nil
-				classInfo.hasMethodProperties = true
+			local isPrivate, isProtected = false, false
+			if methodProperty ~= nil then
+				classInfo.methodProperties = classInfo.methodProperties or {}
+				classInfo.methodProperties[key] = methodProperty
+				if methodProperty == "PRIVATE" then
+					isPrivate = true
+				elseif methodProperty == "PROTECTED" then
+					isProtected = true
+				elseif methodProperty == "ABSTRACT" then
+					-- Just need to set the property
+					return
+				else
+					error("Unknown method property: "..tostring(methodProperty))
+				end
 			end
 			-- We wrap class methods so that within them, the instance appears to be of the defining class
 			classInfo.static[key] = function(inst, ...)
@@ -228,7 +270,7 @@ private.CLASS_MT = {
 				if not instInfo or not instInfo.isClassLookup[self] then
 					error(format("Attempt to call class method on non-object (%s)!", tostring(inst)), 2)
 				end
-				if not classInfo.hasMethodProperties and not instInfo.hasSuperclass then
+				if not classInfo.methodProperties and not instInfo.hasSuperclass then
 					-- don't need to worry about methodClass so just call the function directly
 					return value(inst, ...)
 				else
@@ -246,12 +288,12 @@ private.CLASS_MT = {
 		else
 			classInfo.static[key] = value
 		end
-		assert(not classInfo.referenceType)
 	end,
 	__index = function(self, key)
 		local classInfo = private.classInfo[self]
-		assert(classInfo.referenceType == nil)
-		-- check if it's the special __isa method which all classes implicitly have
+		if classInfo.referenceType ~= nil then
+			error("Can't index into property table", 2)
+		end
 		if key == "__isa" then
 			return private.ClassIsA
 		elseif key == "__name" then
@@ -268,6 +310,9 @@ private.CLASS_MT = {
 			classInfo.referenceType = "PROTECTED"
 			return self
 		elseif key == "__abstract" then
+			if not classInfo.abstract then
+				error("Can only define abstract methods on abstract classes", 2)
+			end
 			classInfo.referenceType = "ABSTRACT"
 			return self
 		elseif classInfo.static[key] ~= nil then
@@ -312,9 +357,9 @@ private.CLASS_MT = {
 		while c do
 			private.instInfo[inst].isClassLookup[c] = true
 			c = private.classInfo[c].superclass
-			if c and private.classInfo[c] and private.classInfo[c].abstractMethods then
-				for methodName in pairs(private.classInfo[c].abstractMethods) do
-					if type(classInfo.static[methodName]) ~= "function" then
+			if c and private.classInfo[c] and private.classInfo[c].methodProperties then
+				for methodName, property in pairs(private.classInfo[c].methodProperties) do
+					if property == "ABSTRACT" and type(classInfo.static[methodName]) ~= "function" then
 						error("Missing abstract method: "..tostring(methodName), 2)
 					end
 				end
@@ -322,10 +367,15 @@ private.CLASS_MT = {
 		end
 		if private.constructTbl then
 			-- re-set all the object attributes through the proper metamethod
+			assert(not next(private.tempTable))
 			for k, v in pairs(inst) do
+				private.tempTable[k] = v
+			end
+			for k, v in pairs(private.tempTable) do
 				rawset(inst, k, nil)
 				inst[k] = v
 			end
+			wipe(private.tempTable)
 			private.constructTbl = nil
 		end
 		if select("#", inst:__init(...)) > 0 then

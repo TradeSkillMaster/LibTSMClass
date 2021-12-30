@@ -3,6 +3,7 @@ globals = {
 	"LibStub",
 	"format",
 	"strmatch",
+	"wipe",
 }
 
 -- no max line length
