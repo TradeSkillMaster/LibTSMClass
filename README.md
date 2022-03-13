@@ -33,13 +33,16 @@ print(classInst.existingValue) -- prints 2
 
 ### Static Attributes
 
-Static fields are allowed on all classes and can be accessed by instances of the class.
+Static fields are allowed on all classes and can be accessed by instances of the class. Note that modifying the value of a static field on an instance of the class creates a new property on the instance and does not modify the class's static value.
 
 ```lua
 MyClass.staticValue = 31
 print(MyClass.staticValue) -- prints 31
 local classInst = MyClass()
 print(classInst.staticValue) -- prints 31
+classInst.staticValue = 2
+print(classInst.staticValue) -- prints 2
+print(MyClass.staticValue) -- prints 31
 ```
 
 ### Method Definition

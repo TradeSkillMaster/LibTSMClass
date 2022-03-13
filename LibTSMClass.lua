@@ -329,6 +329,8 @@ private.CLASS_MT = {
 			return self
 		elseif classInfo.static[key] ~= nil then
 			return classInfo.static[key]
+		elseif classInfo.superStatic[key] then
+			return classInfo.superStatic[key].value
 		end
 		error(format("Invalid static class key (%s)", tostring(key)), 2)
 	end,

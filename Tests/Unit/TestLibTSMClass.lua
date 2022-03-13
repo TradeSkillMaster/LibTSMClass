@@ -92,6 +92,9 @@ end
 
 function TestLibTSMClass.TestStatic()
 	local Test = LibTSMClass.DefineClass("Test")
+	function Test.__static.GetA()
+		return 95
+	end
 	function Test.__static.GetZ()
 		return 52
 	end
@@ -101,10 +104,13 @@ function TestLibTSMClass.TestStatic()
 	function TestSub.__static.GetZ()
 		return 77
 	end
+	TestSub.staticX = 9
 	TestSub.staticY = 32
 
 	luaunit.assertEquals(Test.GetZ(), 52)
 	luaunit.assertEquals(TestSub.GetZ(), 77)
+	luaunit.assertEquals(Test.GetA(), 95)
+	luaunit.assertEquals(TestSub.GetA(), 95)
 
 	local testInst = Test()
 	luaunit.assertEquals(testInst.staticX, 39)
@@ -112,9 +118,10 @@ function TestLibTSMClass.TestStatic()
 
 	testInst.staticX = 11
 	luaunit.assertEquals(testInst.staticX, 11)
+	luaunit.assertEquals(Test.staticX, 39)
 
 	local testSubInst = TestSub()
-	luaunit.assertEquals(testSubInst.staticX, 39)
+	luaunit.assertEquals(testSubInst.staticX, 9)
 	luaunit.assertEquals(testSubInst.staticY, 32)
 end
 
