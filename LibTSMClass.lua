@@ -6,7 +6,7 @@
 -- @module LibTSMClass
 
 local MINOR_REVISION = 2
-local Lib = {}
+local Lib = {} ---@class LibTSMClass
 local private = { classInfo = {}, instInfo = {}, constructTbl = nil, tempTable = {} }
 -- Set the keys as weak so that instances of classes can be GC'd (classes are never GC'd)
 setmetatable(private.instInfo, { __mode = "k" })
@@ -54,6 +54,15 @@ local DEFAULT_INST_FIELDS = {
 -- Public Library Functions
 -- ============================================================================
 
+---@alias ClassProperties
+---|'"ABSTRACT"' # An abstract class cannot be directly instantiated
+
+---Defines a new class.
+---@generic T: Class
+---@param name `T` The name of the class
+---@param superclass? any The superclass
+---@param ... ClassProperties Properties to define the class with
+---@return T
 function Lib.DefineClass(name, superclass, ...)
 	if type(name) ~= "string" then
 		error("Invalid class name: "..tostring(name), 2)
@@ -94,6 +103,12 @@ function Lib.DefineClass(name, superclass, ...)
 	return class
 end
 
+---Constructs a class from an existing table, preserving its keys.
+---@generic T
+---@param tbl table The table with existing keys to preserve
+---@param class T The class to construct
+---@vararg any Arguments to pass to the constructor
+---@return T
 function Lib.ConstructWithTable(tbl, class, ...)
 	private.constructTbl = tbl
 	local inst = class(...)
