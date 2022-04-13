@@ -107,7 +107,7 @@ end
 ---@generic T
 ---@param tbl table The table with existing keys to preserve
 ---@param class T The class to construct
----@vararg any Arguments to pass to the constructor
+---@param ... any Arguments to pass to the constructor
 ---@return T
 function Lib.ConstructWithTable(tbl, class, ...)
 	private.constructTbl = tbl
