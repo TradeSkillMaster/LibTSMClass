@@ -3,6 +3,10 @@ globals = {
 	"LibStub",
 	"format",
 	"strmatch",
+	"strrep",
+	"strsplit",
+	"tinsert",
+	"tremove",
 	"wipe",
 }
 

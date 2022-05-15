@@ -9,75 +9,60 @@ LibTSMClass = LibStub("LibTSMClass")
 
 
 
-local function GetPrintOutput(func)
-	local lines = {}
-	local oldPrint = print
-	print = function(line, ...)
-		assert(select("#", ...) == 0, "Print called with multiple arguments")
-		tinsert(lines, line)
-	end
-	local success, err = pcall(func)
-	print = oldPrint
-	luaunit.assertIsNil(err)
-	luaunit.assertTrue(success)
-	return lines
-end
-
-
 TestLibTSMClass = {}
 function TestLibTSMClass.TestBasic()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__init(self)
+	local TestBasic = LibTSMClass.DefineClass("TestBasic")
+	function TestBasic.__init(self)
 		if not self.initialized then
 			self.initialized = true
 			self.value = 2
 		end
 	end
-	function Test.GetValue(self)
+	function TestBasic.GetValue(self)
 		return self.value
 	end
 
-	local testInst = Test()
+	local testInst = TestBasic()
 	luaunit.assertTrue(testInst.initialized)
 	luaunit.assertEquals(testInst:GetValue(), 2)
 
-	local testInst2 = LibTSMClass.ConstructWithTable({ initialized = true, value = 5 }, Test)
+	local testInst2 = LibTSMClass.ConstructWithTable({ initialized = true, value = 5 }, TestBasic)
 	luaunit.assertTrue(testInst2.initialized)
 	luaunit.assertEquals(testInst2:GetValue(), 5)
 end
 
 function TestLibTSMClass.TestSubClass()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__init(self)
+	local TestSubClass = LibTSMClass.DefineClass("TestSubClass")
+	function TestSubClass.__init(self)
 		self.initialized = true
 		self.n = 2
 	end
-	function Test.GetMagicNumber(self)
+	function TestSubClass.GetMagicNumber(self)
 		return 0
 	end
-	function Test.Echo(self, ...)
+	function TestSubClass.Echo(self, ...)
 		return ...
 	end
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
-	function TestSub.__init(self)
+	local TestSubClassSub = LibTSMClass.DefineClass("TestSubClassSub", TestSubClass)
+	function TestSubClassSub.__init(self)
 		self.__super:__init()
 		self.subInitialized = true
 	end
-	function TestSub.GetMagicNumber(self)
+	function TestSubClassSub.GetMagicNumber(self)
 		return self.__super:GetMagicNumber() + 1
 	end
-	function TestSub.GetText(self)
+	function TestSubClassSub.GetText(self)
 		return "TEXT"
 	end
 
-	luaunit.assertTrue(Test:__isa(Test))
-	luaunit.assertTrue(TestSub:__isa(Test))
-	luaunit.assertTrue(TestSub:__isa(TestSub))
+	luaunit.assertTrue(TestSubClass:__isa(TestSubClass))
+	luaunit.assertTrue(TestSubClassSub:__isa(TestSubClass))
+	luaunit.assertTrue(TestSubClassSub:__isa(TestSubClassSub))
 
-	local testSubInst = TestSub()
-	luaunit.assertTrue(testSubInst:__isa(Test))
-	luaunit.assertTrue(testSubInst:__isa(TestSub))
+	local testSubInst = TestSubClassSub()
+	luaunit.assertTrue(testSubInst:__isa(TestSubClass))
+	luaunit.assertTrue(testSubInst:__isa(TestSubClassSub))
 	luaunit.assertTrue(testSubInst.initialized)
 	luaunit.assertTrue(testSubInst.subInitialized)
 
@@ -91,61 +76,61 @@ function TestLibTSMClass.TestSubClass()
 end
 
 function TestLibTSMClass.TestStatic()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__static.GetA()
+	local TestStatic = LibTSMClass.DefineClass("TestStatic")
+	function TestStatic.__static.GetA()
 		return 95
 	end
-	function Test.__static.GetZ()
+	function TestStatic.__static.GetZ()
 		return 52
 	end
-	Test.staticX = 39
+	TestStatic.staticX = 39
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
-	function TestSub.__static.GetZ()
+	local TestStaticSub = LibTSMClass.DefineClass("TestStaticSub", TestStatic)
+	function TestStaticSub.__static.GetZ()
 		return 77
 	end
-	TestSub.staticX = 9
-	TestSub.staticY = 32
+	TestStaticSub.staticX = 9
+	TestStaticSub.staticY = 32
 
-	luaunit.assertEquals(Test.GetZ(), 52)
-	luaunit.assertEquals(TestSub.GetZ(), 77)
-	luaunit.assertEquals(Test.GetA(), 95)
-	luaunit.assertEquals(TestSub.GetA(), 95)
+	luaunit.assertEquals(TestStatic.GetZ(), 52)
+	luaunit.assertEquals(TestStaticSub.GetZ(), 77)
+	luaunit.assertEquals(TestStatic.GetA(), 95)
+	luaunit.assertEquals(TestStaticSub.GetA(), 95)
 
-	local testInst = Test()
+	local testInst = TestStatic()
 	luaunit.assertEquals(testInst.staticX, 39)
 	luaunit.assertEquals(testInst.staticY, nil)
 
 	testInst.staticX = 11
 	luaunit.assertEquals(testInst.staticX, 11)
-	luaunit.assertEquals(Test.staticX, 39)
+	luaunit.assertEquals(TestStatic.staticX, 39)
 
-	local testSubInst = TestSub()
+	local testSubInst = TestStaticSub()
 	luaunit.assertEquals(testSubInst.staticX, 9)
 	luaunit.assertEquals(testSubInst.staticY, 32)
 end
 
 function TestLibTSMClass.TestVirtual()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.VirtualMethod(self)
+	local TestVirtual = LibTSMClass.DefineClass("TestVirtual")
+	function TestVirtual.VirtualMethod(self)
 		return 111
 	end
-	function Test.VirtualMethodCaller(self)
+	function TestVirtual.VirtualMethodCaller(self)
 		return self:VirtualMethod()
 	end
-	function Test.VirtualMethodCaller2(self)
+	function TestVirtual.VirtualMethodCaller2(self)
 		return self:VirtualMethod2()
 	end
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
-	function TestSub.VirtualMethod(self)
+	local TestVirtualSub = LibTSMClass.DefineClass("TestVirtualSub", TestVirtual)
+	function TestVirtualSub.VirtualMethod(self)
 		return 777
 	end
-	function TestSub.VirtualMethod2(self)
+	function TestVirtualSub.VirtualMethod2(self)
 		return 333
 	end
 
-	local testSubInst = TestSub()
+	local testSubInst = TestVirtualSub()
 	luaunit.assertEquals(testSubInst:VirtualMethod(), 777)
 	luaunit.assertEquals(testSubInst:VirtualMethodCaller(), 777)
 	luaunit.assertEquals(testSubInst:VirtualMethod2(), 333)
@@ -263,236 +248,256 @@ function TestLibTSMClass.TestAsAndSuper()
 end
 
 function TestLibTSMClass.TestAbstractMethod()
-	local Test = LibTSMClass.DefineClass("Test", nil, "ABSTRACT")
-	function Test.__init(self)
+	local TestAbstract = LibTSMClass.DefineClass("TestAbstract", nil, "ABSTRACT")
+	function TestAbstract.__init(self)
 		self.initialized = true
 		self.n = 2
 	end
-	function Test.GetMagicNumber(self)
+	function TestAbstract.GetMagicNumber(self)
 		return 0
 	end
-	function Test.GetMagicPhrase(self)
+	function TestAbstract.GetMagicPhrase(self)
 		return self:GetText()
 	end
-	function Test.__abstract._GetTextImpl()
+	function TestAbstract.__abstract._GetTextImpl()
 	end
-	function Test.GetText(self)
+	function TestAbstract.GetText(self)
 		return self:_GetTextImpl()
 	end
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
-	function TestSub.__init(self)
+	local TestAbstractSub = LibTSMClass.DefineClass("TestAbstractSub", TestAbstract)
+	function TestAbstractSub.__init(self)
 		self.__super:__init()
 		self.subInitialized = true
 	end
-	function TestSub.GetMagicNumber(self)
+	function TestAbstractSub.GetMagicNumber(self)
 		return self.__super:GetMagicNumber() + 1
 	end
 
-	luaunit.assertErrorMsgContains("Missing abstract method: _GetTextImpl", function() TestSub() end)
+	luaunit.assertErrorMsgContains("Missing abstract method: _GetTextImpl", function() TestAbstractSub() end)
 
-	function TestSub.__protected._GetTextImpl(self)
+	function TestAbstractSub.__protected._GetTextImpl(self)
 		return "TEXT"
 	end
-	function TestSub.GetTextFail(self)
+	function TestAbstractSub.GetTextFail(self)
 		return self.__super:_GetTextImpl()
 	end
 
-	local inst = TestSub()
+	local inst = TestAbstractSub()
 	luaunit.assertEquals(inst:GetText(), "TEXT")
 	luaunit.assertErrorMsgContains("attempt to call method '_GetTextImpl' (a nil value)", function() inst:GetTextFail() end)
 end
 
 function TestLibTSMClass.TestPrivateMethod()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__private.GetMagicNumber(self)
+	local TestPrivate = LibTSMClass.DefineClass("TestPrivate")
+	function TestPrivate.__private.GetMagicNumber(self)
 		return 0
 	end
-	function Test.GetMagicPhrase(self)
+	function TestPrivate.GetMagicPhrase(self)
 		return "NUMBER: "..self:GetMagicNumber()
 	end
 
-	local inst = Test()
+	local inst = TestPrivate()
 	luaunit.assertErrorMsgContains("Attempting to call private method (GetMagicNumber) from outside of class", function() inst:GetMagicNumber() end)
 	luaunit.assertEquals(inst:GetMagicPhrase(), "NUMBER: 0")
 end
 
 function TestLibTSMClass.TestProtectedMethod()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__protected._GetNumber(self)
+	local TestProtected = LibTSMClass.DefineClass("TestProtected")
+	function TestProtected.__protected._GetNumber(self)
 		return 4
 	end
 
-	local Test2 = LibTSMClass.DefineClass("Test2")
-	function Test2.GetNumber(self, test)
+	local TestProtected2 = LibTSMClass.DefineClass("TestProtected2")
+	function TestProtected2.GetNumber(self, test)
 		return test:_GetNumber()
 	end
 
-	local instTest = Test()
+	local instTest = TestProtected()
 	luaunit.assertErrorMsgContains("Attempting to call protected method (_GetNumber) from outside of class", function() instTest:_GetNumber() end)
 
-	local instTest2 = Test2()
+	local instTest2 = TestProtected2()
 	luaunit.assertErrorMsgContains("Attempting to call protected method (_GetNumber) from outside of class", function() instTest2:GetNumber(instTest) end)
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
-	function TestSub.GetMagicNumber(self)
+	local TestProtectedSub = LibTSMClass.DefineClass("TestProtectedSub", TestProtected)
+	function TestProtectedSub.GetMagicNumber(self)
 		return self:_GetNumber()
 	end
-	luaunit.assertErrorMsgContains("", function() TestSub._GetNumber = function(self) end end)
+	luaunit.assertErrorMsgContains("", function() TestProtectedSub._GetNumber = function(self) end end)
 
-	local instTestSub = TestSub()
+	local instTestSub = TestProtectedSub()
 	luaunit.assertEquals(instTestSub:GetMagicNumber(), 4)
 	luaunit.assertErrorMsgContains("Attempting to call protected method (_GetNumber) from outside of class", function() instTestSub:_GetNumber() end)
 end
 
 function TestLibTSMClass.TestClosure()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__init(self)
+	local TestClosure = LibTSMClass.DefineClass("TestClosure")
+	function TestClosure.__init(self)
 		self.testFunc = self:__closure("_GetNumber")
 	end
-	function Test.__private._GetNumber(self)
+	function TestClosure.__private._GetNumber(self)
 		return 4
 	end
-	function Test.CallTestFunc(self)
+	function TestClosure.CallTestFunc(self)
 		return self.testFunc()
 	end
 
-	local instTest = Test()
+	local instTest = TestClosure()
 	luaunit.assertEquals(instTest.testFunc(), 4)
 	luaunit.assertEquals(instTest:CallTestFunc(), 4)
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
-	function TestSub.SubCallTestFunc(self)
+	local TestClosureSub = LibTSMClass.DefineClass("TestClosureSub", TestClosure)
+	function TestClosureSub.SubCallTestFunc(self)
 		return self.testFunc()
 	end
 
-	local instTestSub = TestSub()
+	local instTestSub = TestClosureSub()
 	luaunit.assertEquals(instTestSub.testFunc(), 4)
 	luaunit.assertEquals(instTestSub:CallTestFunc(), 4)
 	luaunit.assertEquals(instTestSub:SubCallTestFunc(), 4)
 end
 
-function TestLibTSMClass.TestDump()
-	local Test = LibTSMClass.DefineClass("Test")
-	function Test.__init(self)
+function TestLibTSMClass.TestDebugInfo()
+	local TestDebugInfo = LibTSMClass.DefineClass("TestDebugInfo")
+	function TestDebugInfo.__init(self)
 		self.a = 2
 		self.b = "hi"
 		self.c = {1, 2, 3}
 		self.d = {}
-		self.e = self
+		self.e = TestDebugInfo
 	end
 
-	luaunit.assertEquals(Test.__name, "Test")
+	luaunit.assertEquals(TestDebugInfo.__name, "TestDebugInfo")
 
-	local inst = Test()
+	local inst = TestDebugInfo()
 	local instStr = tostring(inst)
-	luaunit.assertStrMatches(instStr, "^Test:[0-9a-fA-F]+$")
+	luaunit.assertStrMatches(instStr, "^TestDebugInfo:[0-9a-fA-F]+$")
 
-	local output = GetPrintOutput(function() inst:__dump() end)
-	luaunit.assertEquals(#output, 7)
-	local propertyLines = {output[2], output[3], output[4], output[5], output[6]}
-	sort(propertyLines)
-	local EXPECTED_PROPERTY_LINES = {
-		"  |cff88ccffa|r=2",
-		"  |cff88ccffb|r=hi",
-		"  |cff88ccffc|r={ ... }",
-		"  |cff88ccffd|r={}",
-		"  |cff88ccffe|r="..instStr,
-	}
-	luaunit.assertEquals(propertyLines, EXPECTED_PROPERTY_LINES)
-	luaunit.assertEquals(output[7], "}")
+	local debugLines = {strsplit("\n", LibTSMClass.GetDebugInfo(instStr))}
+	luaunit.assertEquals(#debugLines, 11)
+	local debugLinesContainedVar = { a = false, b = false, c = false, d = false, e = false }
+	local i = 1
+	while i <= #debugLines do
+		local line = debugLines[i]
+		if i == 1 then
+			luaunit.assertEquals(line, "self = <"..instStr.."> {")
+		elseif i == #debugLines then
+			luaunit.assertEquals(line, "}")
+		else
+			local varName = strmatch(line, "%s+([a-z0-9]+) = ")
+			luaunit.assertEquals(debugLinesContainedVar[varName], false)
+			debugLinesContainedVar[varName] = true
+			if varName == "a" then
+			elseif varName == "b" then
+			elseif varName == "c" then
+				luaunit.assertEquals(line, "  c = {")
+				luaunit.assertEquals(debugLines[i+1], "    1 = 1")
+				luaunit.assertEquals(debugLines[i+2], "    2 = 2")
+				luaunit.assertEquals(debugLines[i+3], "    3 = 3")
+				luaunit.assertEquals(debugLines[i+4], "  }")
+				i = i + 4
+			elseif varName == "d" then
+				luaunit.assertEquals(line, "  d = {}")
+			elseif varName == "e" then
+				luaunit.assertEquals(line, "  e = \"class:TestDebugInfo\"")
+			else
+				luaunit.assertTrue(false)
+			end
+		end
+		i = i + 1
+	end
 end
 
 function TestLibTSMClass.TestDefineClassErrors()
 	-- No class name
 	luaunit.assertErrorMsgContains("Invalid class name: nil", function() LibTSMClass.DefineClass() end)
 	-- Invalid modifier
-	luaunit.assertErrorMsgContains("Invalid modifier: INVALID", function() LibTSMClass.DefineClass("Test", nil, "INVALID") end)
+	luaunit.assertErrorMsgContains("Invalid modifier: INVALID", function() LibTSMClass.DefineClass("TestInvalidModifier", nil, "INVALID") end)
 	-- Invalid superclass
-	luaunit.assertErrorMsgContains("Invalid superclass: INVALID", function() LibTSMClass.DefineClass("Test", "INVALID") end)
+	luaunit.assertErrorMsgContains("Invalid superclass: INVALID", function() LibTSMClass.DefineClass("TestInvalidSuperclass", "INVALID") end)
 end
 
 function TestLibTSMClass.TestErrors()
-	local Test = LibTSMClass.DefineClass("Test", nil, "ABSTRACT")
-	function Test.__init(self)
+	local TestErrors = LibTSMClass.DefineClass("TestErrors", nil, "ABSTRACT")
+	function TestErrors.__init(self)
 		self.a = 2
 		self.b = "hi"
 		self.c = true
 	end
-	function Test.GetA(self)
+	function TestErrors.GetA(self)
 		return self.a
 	end
-	function Test.__protected.GetB(self)
+	function TestErrors.__protected.GetB(self)
 		return self.b
 	end
-	function Test.__private.GetC(self)
+	function TestErrors.__private.GetC(self)
 		return self.c
 	end
-	function Test.__abstract.GetD(self)
+	function TestErrors.__abstract.GetD(self)
 	end
-	Test.staticX = 2
-	function Test.__static.StaticFunc()
+	TestErrors.staticX = 2
+	function TestErrors.__static.StaticFunc()
 	end
 
 	-- Modifying static members
-	luaunit.assertErrorMsgContains("Can't modify or override static members", function() Test.staticX = 3 end)
+	luaunit.assertErrorMsgContains("Can't modify or override static members", function() TestErrors.staticX = 3 end)
 	-- Setting a reserved property
-	luaunit.assertErrorMsgContains("Reserved word: __isa", function() Test.__isa = nil end)
+	luaunit.assertErrorMsgContains("Reserved word: __isa", function() TestErrors.__isa = nil end)
 	-- Unnecessary __static
-	luaunit.assertErrorMsgContains("Unnecessary __static for non-function class property", function() Test.__static.z = 1 end)
+	luaunit.assertErrorMsgContains("Unnecessary __static for non-function class property", function() TestErrors.__static.z = 1 end)
 
-	local TestSub = LibTSMClass.DefineClass("TestSub", Test)
+	local TestErrorsSub = LibTSMClass.DefineClass("TestErrorsSub", TestErrors)
 
 	-- Modifying class after subclassing
-	luaunit.assertErrorMsgContains("Can't modify classes after they are subclassed", function() Test.y = 2 end)
+	luaunit.assertErrorMsgContains("Can't modify classes after they are subclassed", function() TestErrors.y = 2 end)
 	-- Overriding a non-method subclass property
-	luaunit.assertErrorMsgContains("Attempting to override non-method superclass property (staticX) with method", function() function TestSub.staticX() end end)
+	luaunit.assertErrorMsgContains("Attempting to override non-method superclass property (staticX) with method", function() function TestErrorsSub.staticX() end end)
 	-- Overriding a public method with a protected method
-	luaunit.assertErrorMsgContains("Overriding a public superclass method (GetA) can only be done with a public method", function() function TestSub.__protected.GetA() end end)
+	luaunit.assertErrorMsgContains("Overriding a public superclass method (GetA) can only be done with a public method", function() function TestErrorsSub.__protected.GetA() end end)
 	-- Overriding an abstract method with a public method
-	luaunit.assertErrorMsgContains("Overriding an abstract superclass method (GetD) can only be done with a protected method", function() function TestSub.GetD() end end)
+	luaunit.assertErrorMsgContains("Overriding an abstract superclass method (GetD) can only be done with a protected method", function() function TestErrorsSub.GetD() end end)
 	-- Overriding a static function with a public method
-	luaunit.assertErrorMsgContains("Can't override static superclass property (StaticFunc) with method", function() function TestSub.StaticFunc() end end)
+	luaunit.assertErrorMsgContains("Can't override static superclass property (StaticFunc) with method", function() function TestErrorsSub.StaticFunc() end end)
 	-- Overriding a private method with a public method
-	luaunit.assertErrorMsgContains("Can't override private superclass method (GetC)", function() function TestSub.GetC() end end)
+	luaunit.assertErrorMsgContains("Can't override private superclass method (GetC)", function() function TestErrorsSub.GetC() end end)
 	-- Define abstract method on non-abstract class
-	luaunit.assertErrorMsgContains("Can only define abstract methods on abstract classes", function() function TestSub.__abstract.GetE() end end)
+	luaunit.assertErrorMsgContains("Can only define abstract methods on abstract classes", function() function TestErrorsSub.__abstract.GetE() end end)
 	-- Invalid class key
-	luaunit.assertErrorMsgContains("Invalid static class key (invalid)", function() return Test.invalid end)
+	luaunit.assertErrorMsgContains("Invalid static class key (invalid)", function() return TestErrors.invalid end)
 	-- Instantiate abstract class
-	luaunit.assertErrorMsgContains("Attempting to instantiate an abstract class", function() Test() end)
+	luaunit.assertErrorMsgContains("Attempting to instantiate an abstract class", function() TestErrors() end)
 	-- Index class with non-string key
-	luaunit.assertErrorMsgContains("Can't index class with non-string key", function() TestSub[2] = true end)
+	luaunit.assertErrorMsgContains("Can't index class with non-string key", function() TestErrorsSub[2] = true end)
 	-- Index into __private
-	luaunit.assertErrorMsgContains("Can't index into property table", function() return Test.__private.GetA end)
+	luaunit.assertErrorMsgContains("Can't index into property table", function() return TestErrors.__private.GetA end)
 
-	function TestSub.__protected.GetD(self)
+	function TestErrorsSub.__protected.GetD(self)
 		return {}
 	end
-	function TestSub.CreateInvalidClosure(self)
+	function TestErrorsSub.CreateInvalidClosure(self)
 		return self:__closure("a")
 	end
 
 	-- Return from __init()
 	local returnFromInit = false
-	function TestSub.__init(self)
+	function TestErrorsSub.__init(self)
 		self.__super:__init()
 		if returnFromInit then
 			return 5
 		end
 	end
 	returnFromInit = true
-	luaunit.assertErrorMsgContains("__init(...) must not return any values", function() TestSub() end)
+	luaunit.assertErrorMsgContains("__init(...) must not return any values", function() TestErrorsSub() end)
 	returnFromInit = false
 
-	local inst = TestSub()
+	local inst = TestErrorsSub()
 
 	-- Setting a reserved key
 	luaunit.assertErrorMsgContains("Can't set reserved key: __isa", function() inst.__isa = 2 end)
 	-- Accessing __super outside of class
 	luaunit.assertErrorMsgContains("The superclass can only be referenced within a class method", function() return inst.__super end)
 	-- Using __as outside of class
-	luaunit.assertErrorMsgContains("The superclass can only be referenced within a class method", function() return inst:__as(Test) end)
+	luaunit.assertErrorMsgContains("The superclass can only be referenced within a class method", function() return inst:__as(TestErrors) end)
 	-- Calling class method on non-class object
 	luaunit.assertErrorMsgContains("Attempt to call class method on non-object (INVALID)", function() inst.GetD("INVALID") end)
 	-- Create closure from outside of class

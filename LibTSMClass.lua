@@ -116,6 +116,24 @@ function Lib.ConstructWithTable(tbl, class, ...)
 	return inst
 end
 
+---Gets instance properties from an instance string for debugging purposes.
+---@param instStr string The string representation of the instance
+---@param maxDepth number The maximum depth to recurse into tables
+---@param tableLookupFunc? fun(tbl: table): string? A lookup function which is used to get debug information for an unknown table
+---@return string? @The properties dumped as a multiline string
+function Lib.GetDebugInfo(instStr, maxDepth, tableLookupFunc)
+	for obj, info in pairs(private.instInfo) do
+		if info.str == instStr then
+			assert(not next(private.tempTable))
+			private.InstDump(obj, private.tempTable, maxDepth, tableLookupFunc)
+			local result = table.concat(private.tempTable, "\n")
+			wipe(private.tempTable)
+			return result
+		end
+	end
+	return nil
+end
+
 
 
 -- ============================================================================
@@ -487,29 +505,119 @@ function private.InstClosure(inst, methodName)
 	return instInfo.closures[cacheKey]
 end
 
-function private.InstDump(inst)
+function private.InstDump(inst, resultTbl, maxDepth, tableLookupFunc)
+	local context = {
+		resultTbl = resultTbl,
+		maxDepth = maxDepth or 2,
+		keyStack = {},
+		seen = {},
+		tableLookupFunc = tableLookupFunc,
+	}
+	private.InstDumpHelper(inst, "self", context)
+end
+
+function private.InstDumpHelper(inst, varName, context)
 	local instInfo = private.instInfo[inst]
 	local tbl = instInfo.hasSuperclass and instInfo.fields or inst
-	print(instInfo.str.." {")
+	private.InstDumpLine(varName.." = <"..instInfo.str.."> {", context)
 	for key, value in pairs(tbl) do
-		local valueStr = nil
-		if type(value) == "table" then
-			if private.classInfo[value] or private.instInfo[value] then
-				-- this is a class or instance of a class
-				valueStr = tostring(value)
-			elseif next(value) then
-				valueStr = "{ ... }"
-			else
-				valueStr = "{}"
-			end
-		elseif type(value) == "string" or type(value) == "number" or type(value) == "boolean" then
-			valueStr = tostring(value)
-		end
-		if valueStr then
-			print(format("  |cff88ccff%s|r=%s", tostring(key), valueStr))
-		end
+		tinsert(context.keyStack, key)
+		private.InstDumpVariable(key, value, context)
+		tremove(context.keyStack)
 	end
-	print("}")
+	private.InstDumpLine("}", context)
+end
+
+function private.InstDumpVariable(key, value, context)
+	if type(value) == "table" then
+		if context.seen[value] then
+			private.InstDumpKeyValue(key, "\"REF{."..context.seen[value].."}\"", context)
+			return
+		end
+		context.seen[value] = table.concat(context.keyStack, "")
+		if private.classInfo[value] then
+			-- this is a class or instance of a class
+			private.InstDumpKeyValue(key, "\""..tostring(value).."\"", context)
+		elseif private.instInfo[value] then
+			-- This is an instance of a class
+			if #context.keyStack <= context.maxDepth then
+				-- Recurse into the class
+				private.InstDumpHelper(value, key, context)
+			else
+				private.InstDumpKeyValue(key, "\""..tostring(value).."\"", context)
+			end
+		else
+			local isEmpty = true
+			for _, value2 in pairs(value) do
+				local valueType = type(value2)
+				if valueType == "string" or valueType == "number" or valueType == "boolean" or valueType == "table" then
+					isEmpty = false
+					break
+				end
+			end
+			if isEmpty then
+				if context.tableLookupFunc then
+					local info = context.tableLookupFunc(value)
+					if info then
+						info = {strsplit("\n", info)}
+						if #context.keyStack <= context.maxDepth then
+							-- Display the table values
+							private.InstDumpKeyValue(key, "{", context)
+							tinsert(context.keyStack, "")
+							for _, line in ipairs(info) do
+								print(line)
+								private.InstDumpLine(line, context)
+							end
+							tremove(context.keyStack)
+							private.InstDumpLine("}", context)
+						else
+							private.InstDumpKeyValue(key, "{ ... }", context)
+						end
+					else
+						private.InstDumpKeyValue(key, "{}", context)
+					end
+				else
+					private.InstDumpKeyValue(key, "{}", context)
+				end
+			else
+				if #context.keyStack <= context.maxDepth then
+					-- Recurse into the table
+					private.InstDumpKeyValue(key, "{", context)
+					for key2, value2 in pairs(value) do
+						tinsert(context.keyStack, key2)
+						private.InstDumpVariable(key2, value2, context)
+						tremove(context.keyStack)
+					end
+					private.InstDumpLine("}", context)
+				else
+					private.InstDumpKeyValue(key, "{ ... }", context)
+				end
+			end
+		end
+	elseif type(value) == "string" then
+		private.InstDumpKeyValue(key, "\""..value.."\"", context)
+	elseif type(value) == "number" or type(value) == "boolean" then
+		private.InstDumpKeyValue(key, value, context)
+	end
+end
+
+function private.InstDumpLine(line, context)
+	line = strrep("  ", #context.keyStack)..line
+	if context.resultTbl then
+		tinsert(context.resultTbl, line)
+	else
+		print(line)
+	end
+end
+
+function private.InstDumpKeyValue(key, value, context)
+	key = tostring(key)
+	if not context.resultTbl then
+		key = "|cff88ccff"..key.."|r"
+	end
+	value = tostring(value)
+	local line = format("%s = %s", key, value)
+	private.InstDumpLine(line, context)
 end
 
 

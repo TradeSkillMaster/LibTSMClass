@@ -101,6 +101,7 @@ function tostringall(...)
 	return unpack(result)
 end
 strupper = string.upper
+strrep = string.rep
 
 -- Constants
 COPPER_PER_GOLD = 10000
