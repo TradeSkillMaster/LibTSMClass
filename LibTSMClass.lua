@@ -315,20 +315,15 @@ private.CLASS_MT = {
 				if not instInfo or not instInfo.isClassLookup[self] then
 					error(format("Attempt to call class method on non-object (%s)", tostring(inst)), 2)
 				end
-				if not classInfo.methodProperties and not instInfo.hasSuperclass then
-					-- don't need to worry about methodClass so just call the function directly
-					return value(inst, ...)
-				else
-					local prevMethodClass = instInfo.methodClass
-					if isPrivate and prevMethodClass ~= self then
-						error(format("Attempting to call private method (%s) from outside of class", key), 2)
-					end
-					if isProtected and prevMethodClass == nil then
-						error(format("Attempting to call protected method (%s) from outside of class", key), 2)
-					end
-					instInfo.methodClass = self
-					return private.InstMethodReturnHelper(prevMethodClass, instInfo, value(inst, ...))
+				local prevMethodClass = instInfo.methodClass
+				if isPrivate and prevMethodClass ~= self then
+					error(format("Attempting to call private method (%s) from outside of class", key), 2)
 				end
+				if isProtected and prevMethodClass == nil then
+					error(format("Attempting to call protected method (%s) from outside of class", key), 2)
+				end
+				instInfo.methodClass = self
+				return private.InstMethodReturnHelper(prevMethodClass, instInfo, value(inst, ...))
 			end
 		else
 			classInfo.static[key] = value
