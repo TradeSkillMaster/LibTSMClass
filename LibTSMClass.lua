@@ -578,7 +578,12 @@ function private.InstDumpVariable(key, value, context)
 				if #context.keyStack <= context.maxDepth then
 					-- Recurse into the table
 					private.InstDumpKeyValue(key, "{", context)
+					local numTableEntries = 0
 					for key2, value2 in pairs(value) do
+						numTableEntries = numTableEntries + 1
+						if numTableEntries > 100 then
+							break
+						end
 						tinsert(context.keyStack, key2)
 						private.InstDumpVariable(key2, value2, context)
 						tremove(context.keyStack)
@@ -607,6 +612,9 @@ end
 
 function private.InstDumpKeyValue(key, value, context)
 	key = tostring(key)
+	if key == "" then
+		key = "\"\""
+	end
 	if not context.resultTbl then
 		key = "|cff88ccff"..key.."|r"
 	end
