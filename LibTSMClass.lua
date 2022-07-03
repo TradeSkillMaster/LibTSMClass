@@ -560,7 +560,6 @@ function private.InstDumpVariable(key, value, context)
 							private.InstDumpKeyValue(key, "{", context)
 							tinsert(context.keyStack, "")
 							for _, line in ipairs(info) do
-								print(line)
 								private.InstDumpLine(line, context)
 							end
 							tremove(context.keyStack)
