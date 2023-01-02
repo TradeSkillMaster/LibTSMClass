@@ -2,6 +2,8 @@
 globals = {
 	"LibStub",
 	"format",
+	"gsub",
+	"strfind",
 	"strmatch",
 	"strrep",
 	"strsplit",
