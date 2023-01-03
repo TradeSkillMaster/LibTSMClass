@@ -566,11 +566,13 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 				local instInfo = private.instInfo[value]
 				local tbl = instInfo.hasSuperclass and instInfo.fields or value
 				private.InstDumpLine(key.." = <"..instInfo.str.."> {", context)
+				context.depth = context.depth + 1
 				for key2, value2 in pairs(tbl) do
-					context.depth = context.depth + 1
-					private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
-					context.depth = context.depth - 1
+					if type(key2) == "string" or type(key2) == "number" or type(key2) == "boolean" then
+						private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
+					end
 				end
+				context.depth = context.depth - 1
 				private.InstDumpLine("}", context)
 			else
 				private.InstDumpKeyValue(key, "\""..tostring(value).."\"", context)
@@ -610,8 +612,10 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 						if numTableEntries >= context.maxTableEntries then
 							break
 						end
-						numTableEntries = numTableEntries + 1
-						private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
+						if type(key2) == "string" or type(key2) == "number" or type(key2) == "boolean" then
+							numTableEntries = numTableEntries + 1
+							private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
+						end
 					end
 					context.depth = context.depth - 1
 					private.InstDumpLine("}", context)
