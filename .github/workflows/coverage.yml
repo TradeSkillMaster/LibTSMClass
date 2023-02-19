@@ -1,0 +1,47 @@
+name: Coverage
+on:
+  push:
+    branches:
+      - master
+jobs:
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./repo
+
+    env:
+      LUA_DEPS_PATH: ${{ github.workspace }}/.luadeps
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+          path: repo
+
+      - name: Install Lua 5.1.5
+        uses: leafo/gh-actions-lua@v9
+        with:
+          luaVersion: "5.1.5"
+
+      - name: Install Luarocks
+        uses: leafo/gh-actions-luarocks@v4
+
+      - name: Install Lua Dependencies
+        run: |
+          mkdir -p $LUA_DEPS_PATH
+          git clone --depth=1 https://bitbucket.org/tradeskillmasteraddon/luacheck.git $LUA_DEPS_PATH/luacheck
+          cd $LUA_DEPS_PATH/luacheck && luarocks make
+          luarocks install luacov
+          luarocks install luacov-coveralls
+
+      - name: Generate Code Coverage
+        run: |
+          lua -lluacov Tests/Unit/TestLibTSMClass.lua
+          luacov
+
+      - name: Upload to coveralls.io
+        run: luacov-coveralls -t ${{ secrets.COVERALLS_IO_TOKEN }}
