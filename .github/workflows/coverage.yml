@@ -44,4 +44,6 @@ jobs:
           luacov
 
       - name: Upload to coveralls.io
-        run: luacov-coveralls -t ${{ secrets.COVERALLS_IO_TOKEN }}
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: luacov-coveralls
