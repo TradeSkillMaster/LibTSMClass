@@ -60,7 +60,7 @@ end
 
 ### Static Class Functions
 
-Static class functions (not instead methods) can be defined via the `__static` property.
+Static class functions (not instance methods) can be defined via the `__static` property.
 
 ```lua
 function MyClass.__static.GetSecretNumber()
@@ -126,7 +126,7 @@ end
 
 ### Private Class Methods
 
-Classes can define `private` methods which can only be accessed by the class itself. In other worse, these methods can only be called from within another method of the same class. Private methods are defined by creating them against the `__private` property of the class.
+Classes can define `private` methods which can only be accessed by the class itself. In other words, these methods can only be called from within another method of the same class or within a static function of the class. Private methods are defined by creating them against the `__private` property of the class.
 
 ```lua
 function MyClass.__private._HashRound(self, x, y)
@@ -139,7 +139,7 @@ end
 
 ### Protected Class Methods
 
-Classes can define `protected` methods which behave like private classes, but can also be accessed by subclsses of the class. Protected methods are defined by creating them against the `__protected` property of the class (in a similar manner to example above for private methods).
+Classes can define `protected` methods which behave like private methods, but can also be accessed by subclasses of the class. Protected methods are defined by creating them against the `__protected` property of the class (in a similar manner to example above for private methods).
 
 ### Other Useful Attributes
 
