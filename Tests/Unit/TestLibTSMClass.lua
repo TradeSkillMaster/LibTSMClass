@@ -330,6 +330,75 @@ function TestLibTSMClass.TestProtectedMethod()
 	luaunit.assertErrorMsgContains("Attempting to call protected method (_GetNumber) from outside of class", function() instTestSub:_GetNumber() end)
 end
 
+function TestLibTSMClass.TestPrivateInit()
+	local TestPrivateInit = LibTSMClass.DefineClass("TestPrivateInit")
+	function TestPrivateInit.__private.__init(self, value)
+		self.value = value
+		self.value2 = nil
+	end
+	function TestPrivateInit.__private._SetValue2(self, value)
+		self.value2 = value
+	end
+	function TestPrivateInit.__static.Create(value)
+		local inst = TestPrivateInit(value)
+		inst:_SetValue2(value * -1)
+		return inst
+	end
+
+	local TestPrivateInitSub = LibTSMClass.DefineClass("TestPrivateInitSub", TestPrivateInit)
+	luaunit.assertErrorMsgContains("Can't override private superclass method", function() function TestPrivateInitSub.__init(self) end end)
+
+	luaunit.assertErrorMsgContains("Attempting to call private method (__init) from outside of class", function() TestPrivateInit(12) end)
+	luaunit.assertErrorMsgContains("Attempting to call private method (__init) from outside of class", function() TestPrivateInitSub(12) end)
+
+	local testInst = TestPrivateInit.Create(42)
+	luaunit.assertEquals(testInst.value, 42)
+	luaunit.assertEquals(testInst.value2, -42)
+end
+
+function TestLibTSMClass.TestProtectedInit()
+	local TestProtectedInit = LibTSMClass.DefineClass("TestProtectedInit")
+	function TestProtectedInit.__protected.__init(self, value)
+		self.value = value
+		self.value2 = nil
+	end
+	function TestProtectedInit.__protected._SetValue2(self, value)
+		self.value2 = value
+	end
+	function TestProtectedInit.__static.Create(value)
+		local inst = TestProtectedInit(value)
+		inst:_SetValue2(value * -1)
+		return inst
+	end
+
+	local TestProtectedInitSub = LibTSMClass.DefineClass("TestProtectedInitSub", TestProtectedInit)
+	luaunit.assertErrorMsgContains("Overriding a protected superclass method (__init) can only be done with a protected method", function() function TestProtectedInitSub.__init(self) end end)
+	function TestProtectedInitSub.__protected.__init(self, value, value3)
+		self.__super:__init(value)
+		self.value3 = value3
+	end
+	function TestProtectedInitSub.__protected._SetValue2(self, value)
+		self.__super:_SetValue2(value)
+	end
+	function TestProtectedInitSub.__static.Create(value, value3)
+		local inst = TestProtectedInitSub(value, value3)
+		inst:_SetValue2(value * -1)
+		return inst
+	end
+
+	luaunit.assertErrorMsgContains("Attempting to call protected method (__init) from outside of class", function() TestProtectedInit(12) end)
+	luaunit.assertErrorMsgContains("Attempting to call protected method (__init) from outside of class", function() TestProtectedInitSub(12) end)
+
+	local testInst = TestProtectedInit.Create(42)
+	luaunit.assertEquals(testInst.value, 42)
+	luaunit.assertEquals(testInst.value2, -42)
+
+	local testInstSub = TestProtectedInitSub.Create(42, 11)
+	luaunit.assertEquals(testInstSub.value, 42)
+	luaunit.assertEquals(testInstSub.value2, -42)
+	luaunit.assertEquals(testInstSub.value3, 11)
+end
+
 function TestLibTSMClass.TestClosure()
 	local TestClosure = LibTSMClass.DefineClass("TestClosure")
 	function TestClosure.__init(self)
