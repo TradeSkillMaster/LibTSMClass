@@ -434,17 +434,21 @@ function TestLibTSMClass.TestDebugInfo()
 		self.c = {1, 2, 3}
 		self.d = {}
 		self.e = TestDebugInfo
+		self.f = {self.a, self.d, {[""] = {9}}}
 	end
 
 	luaunit.assertEquals(TestDebugInfo.__name, "TestDebugInfo")
+
+	luaunit.assertIsNil(LibTSMClass.GetDebugInfo("TestDebugInfo:xxxx"))
 
 	local inst = TestDebugInfo()
 	local instStr = tostring(inst)
 	luaunit.assertStrMatches(instStr, "^TestDebugInfo:[0-9a-fA-F]+$")
 
-	local debugLines = {strsplit("\n", LibTSMClass.GetDebugInfo(instStr))}
-	luaunit.assertEquals(#debugLines, 11)
-	local debugLinesContainedVar = { a = false, b = false, c = false, d = false, e = false }
+	local debugInfoStr = LibTSMClass.GetDebugInfo(instStr)
+	local debugLines = {strsplit("\n", debugInfoStr)}
+	luaunit.assertEquals(#debugLines, 18)
+	local debugLinesContainedVar = { a = false, b = false, c = false, d = false, e = false, f = false }
 	local i = 1
 	while i <= #debugLines do
 		local line = debugLines[i]
@@ -469,12 +473,35 @@ function TestLibTSMClass.TestDebugInfo()
 				luaunit.assertEquals(line, "  d = {}")
 			elseif varName == "e" then
 				luaunit.assertEquals(line, "  e = \"class:TestDebugInfo\"")
+			elseif varName == "f" then
+				luaunit.assertEquals(line, "  f = {")
+				luaunit.assertEquals(debugLines[i+1], "    1 = 2")
+				luaunit.assertEquals(debugLines[i+2], "    2 = \"REF{.d}\"")
+				luaunit.assertEquals(debugLines[i+3], "    3 = {")
+				luaunit.assertEquals(debugLines[i+4], "      \"\" = { ... }")
+				luaunit.assertEquals(debugLines[i+5], "    }")
+				luaunit.assertEquals(debugLines[i+6], "  }")
+				i = i + 6
 			else
 				luaunit.assertTrue(false)
 			end
 		end
 		i = i + 1
 	end
+
+	-- Capture the printed output from __dump() and make sure it matches the debug info from above
+	local dumpLines = {}
+	local origPrint = print
+	print = function(line, ...)
+		assert(select("#", ...) == 0)
+		-- Strip any colors
+		line = gsub(line, "|cff[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]([^|]*)|r", "%1")
+		tinsert(dumpLines, line)
+	end
+	local success, errMsg = pcall(function() inst:__dump() end)
+	print = origPrint
+	assert(success, errMsg)
+	luaunit.assertEquals(dumpLines, debugLines)
 end
 
 function TestLibTSMClass.TestDefineClassErrors()
