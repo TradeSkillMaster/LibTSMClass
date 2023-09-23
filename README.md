@@ -293,6 +293,10 @@ obj:AddValue(5)
 print(obj:GetValue()) -- 15
 ```
 
+## LuaLS Plugin
+
+A [plugin](LuaLSPlugin/LibTSMClassLuaLSPlugin.lua) for [LuaLS](https://github.com/LuaLS/lua-language-server) is provided to allow for better handling of classes defined with LibTSMClass.
+
 ## License and Contributes
 
 LibTSMClass is licensed under the MIT license. See LICENSE.txt for more information. If you would like to contribute to LibTSMClass, opening an issue or submitting a pull request against the [LibTSMClass Bitbucket project](https://bitbucket.org/tradeskillmasteraddon/libtsmclass) is highly encouraged.
