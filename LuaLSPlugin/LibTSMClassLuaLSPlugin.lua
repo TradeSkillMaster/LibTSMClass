@@ -26,7 +26,7 @@ function OnSetText(uri, text)
 
     -- Mark private class members which are set in the constructor and denoted by a leading '_' as private
     for funcStart, funcContent in text:gmatch("function [A-Za-z0-9_]+%.?[_a-z]*:__init%([^%)]*%)()(.-)\nend") do
-        for lineStart in funcContent:gmatch("()self%._[a-zA-Z0-9_]+ = .-\n") do
+        for lineStart in funcContent:gmatch("()self%._[a-zA-Z0-9_]+%s*=") do
             diffs[#diffs+1] = {
                 start = funcStart + lineStart - 1,
                 finish = funcStart + lineStart - 2,
