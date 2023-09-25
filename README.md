@@ -299,4 +299,4 @@ A [plugin](LuaLSPlugin/LibTSMClassLuaLSPlugin.lua) for [LuaLS](https://github.co
 
 ## License and Contributes
 
-LibTSMClass is licensed under the MIT license. See LICENSE.txt for more information. If you would like to contribute to LibTSMClass, opening an issue or submitting a pull request against the [LibTSMClass Bitbucket project](https://bitbucket.org/tradeskillmasteraddon/libtsmclass) is highly encouraged.
+LibTSMClass is licensed under the MIT license. See LICENSE.txt for more information. If you would like to contribute to LibTSMClass, opening an issue or submitting a pull request against the [LibTSMClass GitHub project](https://github.com/TradeSkillMaster/LibTSMClass) is highly encouraged.
