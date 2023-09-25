@@ -91,7 +91,7 @@ function Lib.DefineClass(name, superclass, ...)
 		referenceType = nil,
 		subclassed = false,
 		methodProperties = nil, -- set as needed
-		inStaticFunc = 0,
+		inClassFunc = 0,
 	}
 	while superclass do
 		for key, value in pairs(private.classInfo[superclass].static) do
@@ -255,7 +255,7 @@ private.CLASS_MT = {
 			classInfo.methodProperties[key] = "STATIC"
 			-- We wrap static methods so that we can allow private or protected access within them
 			classInfo.static[key] = function(...)
-				classInfo.inStaticFunc = classInfo.inStaticFunc + 1
+				classInfo.inClassFunc = classInfo.inClassFunc + 1
 				return private.StaticFuncReturnHelper(classInfo, value(...))
 			end
 		elseif isFunction and not isStatic then
@@ -325,14 +325,15 @@ private.CLASS_MT = {
 					error(format("Attempt to call class method on non-object (%s)", tostring(inst)), 2)
 				end
 				local prevMethodClass = instInfo.methodClass
-				if isPrivate and prevMethodClass ~= self and (prevMethodClass ~= nil or classInfo.inStaticFunc == 0) then
+				if isPrivate and prevMethodClass ~= self and (prevMethodClass ~= nil or classInfo.inClassFunc == 0) then
 					error(format("Attempting to call private method (%s) from outside of class", key), 2)
 				end
-				if isProtected and prevMethodClass == nil and classInfo.inStaticFunc == 0 then
+				if isProtected and prevMethodClass == nil and classInfo.inClassFunc == 0 then
 					error(format("Attempting to call protected method (%s) from outside of class", key), 2)
 				end
 				instInfo.methodClass = self
-				return private.InstMethodReturnHelper(prevMethodClass, instInfo, value(inst, ...))
+				classInfo.inClassFunc = classInfo.inClassFunc + 1
+				return private.InstMethodReturnHelper(prevMethodClass, instInfo, classInfo, value(inst, ...))
 			end
 		elseif not isFunction then
 			-- We are defining a static property (shouldn't be explicitly marked as static)
@@ -454,15 +455,16 @@ function private.ClassIsA(class, targetClass)
 	end
 end
 
-function private.InstMethodReturnHelper(class, instInfo, ...)
-	-- Reset methodClass now that the function returned
+function private.InstMethodReturnHelper(class, instInfo, classInfo, ...)
+	-- Reset methodClass and decrement inClassFunc now that the function returned
 	instInfo.methodClass = class
+	classInfo.inClassFunc = classInfo.inClassFunc - 1
 	return ...
 end
 
 function private.StaticFuncReturnHelper(classInfo, ...)
-	-- Decrement inStaticFunc now that the function returned
-	classInfo.inStaticFunc = classInfo.inStaticFunc - 1
+	-- Decrement inClassFunc now that the function returned
+	classInfo.inClassFunc = classInfo.inClassFunc - 1
 	return ...
 end
 
@@ -498,7 +500,8 @@ function private.InstClosure(inst, methodName)
 		error("Closures can only be created within a class method", 2)
 	end
 	local class = instInfo.methodClass
-	local methodFunc = private.classInfo[class].static[methodName]
+	local classInfo = private.classInfo[class]
+	local methodFunc = classInfo.static[methodName]
 	if type(methodFunc) ~= "function" then
 		error("Attempt to create closure for non-method field", 2)
 	end
@@ -512,7 +515,8 @@ function private.InstClosure(inst, methodName)
 				-- Pretend we are within the class which created the closure
 				local prevClass = instInfo.methodClass
 				instInfo.methodClass = class
-				return private.InstMethodReturnHelper(prevClass, instInfo, methodFunc(inst, ...))
+				classInfo.inClassFunc = classInfo.inClassFunc + 1
+				return private.InstMethodReturnHelper(prevClass, instInfo, classInfo, methodFunc(inst, ...))
 			end
 		end
 	end
