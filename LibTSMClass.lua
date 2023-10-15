@@ -549,7 +549,7 @@ function private.InstDump(inst, resultTbl, maxDepth, tableLookupFunc)
 					value = instInfo.hasSuperclass and instInfo.fields or value
 				end
 				for k, v in pairs(value) do
-					if type(v) == "table" and type(k) == "string" and not strfind(k, DUMP_KEY_PATH_DELIM, nil, true) then
+					if type(v) == "table" and (type(k) == "string" or type(k) == "number") and not strfind(k, DUMP_KEY_PATH_DELIM, nil, true) then
 						tinsert(bfsQueueKeyPath, keyPath..DUMP_KEY_PATH_DELIM..k)
 						tinsert(bfsQueueDepth, depth + 1)
 						tinsert(bfsQueueValue, v)
