@@ -549,7 +549,7 @@ function private.InstDump(inst, resultTbl, maxDepth, tableLookupFunc)
 					value = instInfo.hasSuperclass and instInfo.fields or value
 				end
 				for k, v in pairs(value) do
-					if type(v) == "table" and not strfind(k, DUMP_KEY_PATH_DELIM, nil, true) then
+					if type(v) == "table" and (type(k) == "string" or type(k) == "number") and not strfind(k, DUMP_KEY_PATH_DELIM, nil, true) then
 						tinsert(bfsQueueKeyPath, keyPath..DUMP_KEY_PATH_DELIM..k)
 						tinsert(bfsQueueDepth, depth + 1)
 						tinsert(bfsQueueValue, v)
@@ -572,7 +572,9 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 		private.InstDumpKeyValue(key, "\""..tostring(value).."\"", context)
 	elseif type(value) == "table" then
 		local refKeyPath = context.tableRefs[value]
-		assert(refKeyPath)
+		if not refKeyPath then
+			return
+		end
 		if refKeyPath ~= strKeyPath then
 			local refValue = "\"REF{"..gsub(refKeyPath, DUMP_KEY_PATH_DELIM, ".").."}\""
 			private.InstDumpKeyValue(key, refValue, context)
