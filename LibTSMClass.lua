@@ -55,6 +55,8 @@ local DUMP_KEY_PATH_DELIM = "\001"
 -- Public Library Functions
 -- ============================================================================
 
+---@class Class
+
 ---@alias ClassProperties
 ---|'"ABSTRACT"' # An abstract class cannot be directly instantiated
 
