@@ -512,7 +512,10 @@ function private.InstClosure(inst, methodName)
 	if methodFunc == nil then
 		-- Check the super class for the method
 		local superInfo = classInfo.superStatic[methodName]
-		if superInfo then
+		if classInfo.methodProperties and classInfo.methodProperties[methodName] == "ABSTRACT" then
+			-- Get the implementation of the abstract method
+			methodFunc = private.classInfo[instInfo.class].static[methodName]
+		elseif superInfo then
 			if superInfo.properties == "PRIVATE" then
 				error("Attempt to create closure for private superclass method", 2)
 			end
