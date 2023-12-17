@@ -573,6 +573,12 @@ function TestLibTSMClass.TestErrors()
 	function TestErrorsSub.CreateInvalidClosure(self)
 		return self:__closure("a")
 	end
+	function TestErrorsSub.CreateInvalidClosure2(self)
+		return self:__closure("GetC")
+	end
+	function TestErrorsSub.CallPrivate(self)
+		return self:GetC()
+	end
 
 	-- Return from __init()
 	local returnFromInit = false
@@ -600,6 +606,12 @@ function TestLibTSMClass.TestErrors()
 	luaunit.assertErrorMsgContains("Closures can only be created within a class method", function() return inst:__closure("GetD") end)
 	-- Create closure for non-method field
 	luaunit.assertErrorMsgContains("Attempt to create closure for non-method field", function() inst:CreateInvalidClosure() end)
+	-- Cannot create closure for superclass private method
+	luaunit.assertErrorMsgContains("Attempt to create closure for private superclass method", function() return inst:CreateInvalidClosure2() end)
+	-- Calling a private superclass method from outside of class method
+	luaunit.assertErrorMsgContains("Attempting to call private method (GetC) from outside of class", function() inst:GetC() end)
+	-- Calling a private superclass method from within a subclass
+	luaunit.assertErrorMsgContains("Attempting to call private method (GetC) from outside of class", function() inst:CallPrivate() end)
 end
 
 

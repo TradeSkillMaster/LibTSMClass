@@ -96,12 +96,17 @@ function Lib.DefineClass(name, superclass, ...)
 		inClassFunc = 0,
 	}
 	while superclass do
-		for key, value in pairs(private.classInfo[superclass].static) do
+		local superclassInfo = private.classInfo[superclass]
+		for key, value in pairs(superclassInfo.static) do
 			if not private.classInfo[class].superStatic[key] then
-				private.classInfo[class].superStatic[key] = { class = superclass, value = value }
+				private.classInfo[class].superStatic[key] = {
+					class = superclass,
+					value = value,
+					properties = superclassInfo.methodProperties and superclassInfo.methodProperties[key] or nil,
+				}
 			end
 		end
-		private.classInfo[superclass].subclassed = true
+		superclassInfo.subclassed = true
 		superclass = superclass.__super
 	end
 	return class
@@ -504,6 +509,16 @@ function private.InstClosure(inst, methodName)
 	local class = instInfo.methodClass
 	local classInfo = private.classInfo[class]
 	local methodFunc = classInfo.static[methodName]
+	if methodFunc == nil then
+		-- Check the super class for the method
+		local superInfo = classInfo.superStatic[methodName]
+		if superInfo then
+			if superInfo.properties == "PRIVATE" then
+				error("Attempt to create closure for private superclass method", 2)
+			end
+			methodFunc = superInfo.value
+		end
+	end
 	if type(methodFunc) ~= "function" then
 		error("Attempt to create closure for non-method field", 2)
 	end

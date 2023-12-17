@@ -3,6 +3,9 @@ function OnSetText(uri, text)
 
     -- Look for function definitions
     for lineStart, modifierStart, modifier, modifierEnd, colonOrDot in text:gmatch("()function [A-Za-z0-9_]+()%.__([a-z]+)()([:%.])[A-Za-z0-9_]+%(") do
+        if modifier == "abstract" then
+            modifier = "protected"
+        end
         if modifier == "static" and colonOrDot == "." then
             -- Add static class methods to the class
             diffs[#diffs+1] = {
@@ -15,17 +18,6 @@ function OnSetText(uri, text)
                 start = lineStart,
                 finish = lineStart - 1,
                 text = "---@"..modifier.."\n",
-            }
-            diffs[#diffs+1] = {
-                start = modifierStart,
-                finish = modifierEnd - 1,
-                text = "",
-            }
-        elseif modifier == "__protected" then
-            diffs[#diffs+1] = {
-                start = lineStart,
-                finish = lineStart - 1,
-                text = "---@protected\n",
             }
             diffs[#diffs+1] = {
                 start = modifierStart,
