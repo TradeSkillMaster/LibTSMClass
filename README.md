@@ -173,11 +173,9 @@ All instances have a special `__dump()` method which can be used to pretty-print
 ```lua
 local classInst = MyClass(0)
 classInst:__dump()
--- prints [[
-MyClass:00B8C688 {
-	_value = 0
-}
-]]
+-- MyClass:00B8C688 {
+--     _value = 0
+-- }
 ```
 
 #### `__class`
@@ -197,6 +195,18 @@ In order to test whether or not an instance belongs to a given class, the `__isa
 local classInst = MyClass(3)
 print(classInst:__isa(MyClass)) -- prints true
 print(classInst:__isa(MySubClass)) -- prints false
+```
+
+#### `__closure()`
+
+A class with private or protected methods may want to allow calling those methods from outside of another method of the class, which would generally not be allowed. This can be accomplished using the `__closure` method.
+
+```lua
+function MyClass.__private._EventHandler(self, eventName)
+	print("Handling event: "..eventName)
+end
+local classInst = MyClass(3)
+Event.RegisterHandler(classInst:__closure("_EventHandler"))
 ```
 
 ### Virtual Methods

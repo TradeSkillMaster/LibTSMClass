@@ -30,7 +30,7 @@ jobs:
       - name: Install Lua Dependencies
         run: |
           mkdir -p $LUA_DEPS_PATH
-          git clone --depth=1 https://bitbucket.org/tradeskillmasteraddon/luacheck.git $LUA_DEPS_PATH/luacheck
+          git clone --depth=1 https://github.com/TradeSkillMaster/luacheck.git $LUA_DEPS_PATH/luacheck
           cd $LUA_DEPS_PATH/luacheck && luarocks make
 
       - name: Run Luacheck
