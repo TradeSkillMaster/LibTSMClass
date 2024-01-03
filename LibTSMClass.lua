@@ -409,27 +409,47 @@ private.CLASS_MT = {
 			closures = {},
 		}
 		if not hasSuperclass then
-			-- set the static members directly on this object for better performance
+			-- Set the static members directly on this object for better performance
 			for key, value in pairs(classInfo.static) do
 				if not SPECIAL_PROPERTIES[key] then
 					rawset(inst, key, value)
 				end
 			end
 		end
+		-- Check that all the abstract methods have been defined
+		assert(not next(private.tempTable))
 		local c = self
 		while c do
 			private.instInfo[inst].isClassLookup[c] = true
 			c = private.classInfo[c].superclass
 			if c and private.classInfo[c] and private.classInfo[c].methodProperties then
 				for methodName, property in pairs(private.classInfo[c].methodProperties) do
-					if property == "ABSTRACT" and type(classInfo.static[methodName]) ~= "function" then
-						error("Missing abstract method: "..tostring(methodName), 2)
+					if property == "ABSTRACT" then
+						private.tempTable[methodName] = true
 					end
 				end
 			end
 		end
+		for methodName in pairs(private.tempTable) do
+			if type(classInfo.static[methodName]) ~= "function" then
+				-- Check the superclasses
+				local found = false
+				local c2 = self
+				while c2 and not found do
+					c2 = private.classInfo[c2].superclass
+					if c2 and private.classInfo[c2] and private.classInfo[c2].static[methodName] then
+						found = true
+					end
+				end
+				if not found then
+					wipe(private.tempTable)
+					error("Missing abstract method: "..tostring(methodName), 2)
+				end
+			end
+		end
+		wipe(private.tempTable)
 		if private.constructTbl then
-			-- re-set all the object attributes through the proper metamethod
+			-- Re-set all the object attributes through the proper metamethod
 			assert(not next(private.tempTable))
 			for k, v in pairs(inst) do
 				private.tempTable[k] = v
@@ -510,7 +530,7 @@ function private.InstClosure(inst, methodName)
 	local classInfo = private.classInfo[class]
 	local methodFunc = classInfo.static[methodName]
 	if methodFunc == nil then
-		-- Check the super class for the method
+		-- Check the superclass for the method
 		local superInfo = classInfo.superStatic[methodName]
 		if classInfo.methodProperties and classInfo.methodProperties[methodName] == "ABSTRACT" then
 			-- Get the implementation of the abstract method
