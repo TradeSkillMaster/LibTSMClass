@@ -250,14 +250,6 @@ end
 function TestLibTSMClass.TestAbstractMethod()
 	local TestAbstract = LibTSMClass.DefineClass("TestAbstract", nil, "ABSTRACT")
 	function TestAbstract.__init(self)
-		self.initialized = true
-		self.n = 2
-	end
-	function TestAbstract.GetMagicNumber(self)
-		return 0
-	end
-	function TestAbstract.GetMagicPhrase(self)
-		return self:GetText()
 	end
 	function TestAbstract.__abstract._GetTextImpl()
 	end
@@ -266,14 +258,6 @@ function TestLibTSMClass.TestAbstractMethod()
 	end
 
 	local TestAbstractSub = LibTSMClass.DefineClass("TestAbstractSub", TestAbstract)
-	function TestAbstractSub.__init(self)
-		self.__super:__init()
-		self.subInitialized = true
-	end
-	function TestAbstractSub.GetMagicNumber(self)
-		return self.__super:GetMagicNumber() + 1
-	end
-
 	luaunit.assertErrorMsgContains("Missing abstract method: _GetTextImpl", function() TestAbstractSub() end)
 
 	function TestAbstractSub.__protected._GetTextImpl(self)
@@ -285,6 +269,27 @@ function TestLibTSMClass.TestAbstractMethod()
 
 	local inst = TestAbstractSub()
 	luaunit.assertEquals(inst:GetText(), "TEXT")
+	luaunit.assertErrorMsgContains("attempt to call method '_GetTextImpl' (a nil value)", function() inst:GetTextFail() end)
+
+	local TestAbstractSub2 = LibTSMClass.DefineClass("TestAbstractSub2", TestAbstractSub)
+	function TestAbstractSub2.__init(self)
+		self.__super:__init()
+	end
+
+	local inst2 = TestAbstractSub2()
+	luaunit.assertEquals(inst2:GetText(), "TEXT")
+	luaunit.assertErrorMsgContains("attempt to call method '_GetTextImpl' (a nil value)", function() inst:GetTextFail() end)
+
+	local TestAbstractAbstractSub = LibTSMClass.DefineClass("TestAbstractAbstractSub", TestAbstract, "ABSTRACT")
+	local TestAbstractAbstractSub2 = LibTSMClass.DefineClass("TestAbstractAbstractSub2", TestAbstractAbstractSub)
+	luaunit.assertErrorMsgContains("Missing abstract method: _GetTextImpl", function() TestAbstractAbstractSub2() end)
+
+	function TestAbstractAbstractSub2.__protected._GetTextImpl(self)
+		return "TEXT"
+	end
+
+	local inst3 = TestAbstractAbstractSub2()
+	luaunit.assertEquals(inst3:GetText(), "TEXT")
 	luaunit.assertErrorMsgContains("attempt to call method '_GetTextImpl' (a nil value)", function() inst:GetTextFail() end)
 end
 
