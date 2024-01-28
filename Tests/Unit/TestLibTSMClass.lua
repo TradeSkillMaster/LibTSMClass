@@ -4,8 +4,7 @@ require('Tests.Unit.Include.wowunit')
 
 -- code under test
 require('LibStub.LibStub')
-require('LibTSMClass')
-LibTSMClass = LibStub("LibTSMClass")
+local LibTSMClass, private = unpack(require('LibTSMClass'))
 
 
 
@@ -405,29 +404,56 @@ function TestLibTSMClass.TestProtectedInit()
 end
 
 function TestLibTSMClass.TestClosure()
-	local TestClosure = LibTSMClass.DefineClass("TestClosure")
+	local TestClosureBase = LibTSMClass.DefineClass("TestClosureBase", nil, "ABSTRACT")
+	function TestClosureBase.__init(self)
+		self.testFunc3 = self:__closure("_GetValue")
+	end
+	function TestClosureBase.__abstract._GetValue(self)
+	end
+	function TestClosureBase.CallTestFunc3(self)
+		return self.testFunc3()
+	end
+
+	local TestClosure = LibTSMClass.DefineClass("TestClosure", TestClosureBase)
 	function TestClosure.__init(self)
+		self.__super:__init()
 		self.testFunc = self:__closure("_GetNumber")
+		self.testFunc2 = self:__closure("_GetString")
+	end
+	function TestClosure.__protected._GetValue(self)
+		return 72
 	end
 	function TestClosure.__private._GetNumber(self)
 		return 4
 	end
+	function TestClosure.__protected._GetString(self)
+		return "a"
+	end
 	function TestClosure.CallTestFunc(self)
 		return self.testFunc()
+	end
+	function TestClosure.CallTestFunc2(self)
+		return self.testFunc2()
 	end
 
 	local instTest = TestClosure()
 	luaunit.assertEquals(instTest.testFunc(), 4)
 	luaunit.assertEquals(instTest:CallTestFunc(), 4)
+	luaunit.assertEquals(instTest:CallTestFunc2(), "a")
+	luaunit.assertEquals(instTest:CallTestFunc3(), 72)
 
 	local TestClosureSub = LibTSMClass.DefineClass("TestClosureSub", TestClosure)
 	function TestClosureSub.SubCallTestFunc(self)
 		return self.testFunc()
 	end
+	function TestClosureSub.__protected._GetString(self)
+		return "b"
+	end
 
 	local instTestSub = TestClosureSub()
 	luaunit.assertEquals(instTestSub.testFunc(), 4)
 	luaunit.assertEquals(instTestSub:CallTestFunc(), 4)
+	luaunit.assertEquals(instTestSub:CallTestFunc2(), "b")
 	luaunit.assertEquals(instTestSub:SubCallTestFunc(), 4)
 end
 
@@ -539,6 +565,9 @@ function TestLibTSMClass.TestErrors()
 	TestErrors.staticX = 2
 	function TestErrors.__static.StaticFunc()
 	end
+	function TestErrors.CreateInvalidClosure4(self)
+		return self:__closure("GetE")
+	end
 
 	-- Modifying static members
 	luaunit.assertErrorMsgContains("Can't modify or override static members", function() TestErrors.staticX = 3 end)
@@ -575,11 +604,17 @@ function TestLibTSMClass.TestErrors()
 	function TestErrorsSub.__protected.GetD(self)
 		return {}
 	end
+	function TestErrorsSub.__private.GetE(self)
+		return 222
+	end
 	function TestErrorsSub.CreateInvalidClosure(self)
 		return self:__closure("a")
 	end
 	function TestErrorsSub.CreateInvalidClosure2(self)
 		return self:__closure("GetC")
+	end
+	function TestErrorsSub.CreateInvalidClosure3(self)
+		return self.__super:__closure("GetB")
 	end
 	function TestErrorsSub.CallPrivate(self)
 		return self:GetC()
@@ -599,6 +634,15 @@ function TestLibTSMClass.TestErrors()
 
 	local inst = TestErrorsSub()
 
+	local function CleanPrivateState()
+		local instInfo = private.instInfo[inst]
+		if instInfo.methodClass then
+			instInfo.methodClass = nil
+			private.classInfo[TestErrors].inClassFunc = 0
+			private.classInfo[TestErrorsSub].inClassFunc = 0
+		end
+	end
+
 	-- Setting a reserved key
 	luaunit.assertErrorMsgContains("Can't set reserved key: __isa", function() inst.__isa = 2 end)
 	-- Accessing __super outside of class
@@ -611,8 +655,16 @@ function TestLibTSMClass.TestErrors()
 	luaunit.assertErrorMsgContains("Closures can only be created within a class method", function() return inst:__closure("GetD") end)
 	-- Create closure for non-method field
 	luaunit.assertErrorMsgContains("Attempt to create closure for non-method field", function() inst:CreateInvalidClosure() end)
+	CleanPrivateState()
 	-- Cannot create closure for superclass private method
 	luaunit.assertErrorMsgContains("Attempt to create closure for private superclass method", function() return inst:CreateInvalidClosure2() end)
+	CleanPrivateState()
+	-- Cannot create closure as superclass
+	luaunit.assertErrorMsgContains("Cannot create closure as superclass", function() return inst:CreateInvalidClosure3() end)
+	CleanPrivateState()
+	-- Cannot create closure for virtual private method
+	luaunit.assertErrorMsgContains("Attempt to create closure for private virtual method", function() return inst:CreateInvalidClosure4() end)
+	CleanPrivateState()
 	-- Calling a private superclass method from outside of class method
 	luaunit.assertErrorMsgContains("Attempting to call private method (GetC) from outside of class", function() inst:GetC() end)
 	-- Calling a private superclass method from within a subclass
