@@ -173,14 +173,14 @@ private.INST_MT = {
 		-- table lookup is kept to an absolute minimum, at the expense of readability and code reuse.
 		local instInfo = private.instInfo[self]
 
-		-- check if this key is an instance field first, since this is the most common case
+		-- Check if this key is an instance field first, since this is the most common case
 		local res = instInfo.fields[key]
 		if res ~= nil then
 			instInfo.currentClass = nil
 			return res
 		end
 
-		-- check if it's a special field / method
+		-- Check if it's a special field / method
 		if key == "__super" then
 			if not instInfo.hasSuperclass then
 				error("The class of this instance has no superclass", 2)
@@ -199,25 +199,25 @@ private.INST_MT = {
 			return private.InstClosure
 		end
 
-		-- reset the current class since we're not continuing the __super chain
+		-- Reset the current class since we're not continuing the __super chain
 		local class = instInfo.currentClass or instInfo.class
 		instInfo.currentClass = nil
 
-		-- check if this is a static key
+		-- Check if this is a static key
 		local classInfo = private.classInfo[class]
 		res = classInfo.static[key]
 		if res ~= nil then
 			return res
 		end
 
-		-- check if it's a static field in the superclass
+		-- Check if it's a static field in the superclass
 		local superStaticRes = classInfo.superStatic[key]
 		if superStaticRes then
 			res = superStaticRes.value
 			return res
 		end
 
-		-- check if this field has a default value
+		-- Check if this field has a default value
 		res = DEFAULT_INST_FIELDS[key]
 		if res ~= nil then
 			return res
@@ -522,21 +522,25 @@ end
 
 function private.InstClosure(inst, methodName)
 	local instInfo = private.instInfo[inst]
-	-- The class of the current class method we are in, or nil if we're not in a class method.
-	if not instInfo.methodClass then
+	local methodClass = instInfo.methodClass
+	if not methodClass then
 		error("Closures can only be created within a class method", 2)
+	elseif instInfo.currentClass then
+		error("Cannot create closure as superclass", 2)
 	end
-	local class = instInfo.methodClass
-	local classInfo = private.classInfo[class]
+	-- Check for this method on the class
+	local classInfo = private.classInfo[instInfo.class]
 	local methodFunc = classInfo.static[methodName]
-	if methodFunc == nil then
-		-- Check the superclass for the method
+	if methodFunc then
+		-- If this method is private, make sure we're within the class
+		if classInfo.methodProperties and classInfo.methodProperties[methodName] == "PRIVATE" and instInfo.class ~= methodClass then
+			error("Attempt to create closure for private virtual method", 2)
+		end
+	else
+		-- Check for this method on the superclass
 		local superInfo = classInfo.superStatic[methodName]
-		if classInfo.methodProperties and classInfo.methodProperties[methodName] == "ABSTRACT" then
-			-- Get the implementation of the abstract method
-			methodFunc = private.classInfo[instInfo.class].static[methodName]
-		elseif superInfo then
-			if superInfo.properties == "PRIVATE" then
+		if superInfo then
+			if superInfo.properties == "PRIVATE" and not private.classInfo[methodClass].static[methodName] then
 				error("Attempt to create closure for private superclass method", 2)
 			end
 			methodFunc = superInfo.value
@@ -545,18 +549,19 @@ function private.InstClosure(inst, methodName)
 	if type(methodFunc) ~= "function" then
 		error("Attempt to create closure for non-method field", 2)
 	end
-	local cacheKey = tostring(class).."."..methodName
+	local methodClassInfo = private.classInfo[methodClass]
+	local cacheKey = tostring(methodClass).."."..methodName
 	if not instInfo.closures[cacheKey] then
 		instInfo.closures[cacheKey] = function(...)
-			if instInfo.methodClass == class then
+			if instInfo.methodClass == methodClass then
 				-- We're already within a method of the class, so just call the method normally
 				return methodFunc(inst, ...)
 			else
 				-- Pretend we are within the class which created the closure
 				local prevClass = instInfo.methodClass
-				instInfo.methodClass = class
-				classInfo.inClassFunc = classInfo.inClassFunc + 1
-				return private.InstMethodReturnHelper(prevClass, instInfo, classInfo, methodFunc(inst, ...))
+				instInfo.methodClass = methodClass
+				methodClassInfo.inClassFunc = methodClassInfo.inClassFunc + 1
+				return private.InstMethodReturnHelper(prevClass, instInfo, methodClassInfo, methodFunc(inst, ...))
 			end
 		end
 	end
@@ -719,11 +724,13 @@ end
 -- ============================================================================
 
 do
-	-- register with LibStub
+	-- Register with LibStub
 	local libStubTbl = LibStub:NewLibrary("LibTSMClass", MINOR_REVISION)
 	if libStubTbl then
 		for k, v in pairs(Lib) do
 			libStubTbl[k] = v
 		end
 	end
+	-- Return the library and our private table for unit testing
+	return {Lib, private}
 end
