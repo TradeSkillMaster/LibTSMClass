@@ -1,9 +1,10 @@
 LibTSMClass
 ===========
 
-The LibTSMClass library allows for writing objected-oriented code in lua! There are many OOP /
-class libraries out there for lua, but none of them had all the features which we needed for
-TradeSkillMaster, were easily imported into WoW, and were sufficiently performant.
+The `LibTSMClass <https://github.com/TradeSkillMaster/LibTSMClass>`_ library allows for writing
+objected-oriented code in lua! There are many OOP / class libraries out there for lua, but none of
+them had all the features which we needed for TradeSkillMaster, were easily imported into WoW, and
+were sufficiently performant.
 
 Example
 -------
