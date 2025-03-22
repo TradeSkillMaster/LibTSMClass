@@ -3,7 +3,6 @@
 -- inhertiance, polymorphism, and virtual methods.
 -- @author TradeSkillMaster Team (admin@tradeskillmaster.com)
 -- @license MIT
--- @module LibTSMClass
 
 local MINOR_REVISION = 2
 local Lib = {} ---@class LibTSMClass
