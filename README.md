@@ -6,7 +6,7 @@ The LibTSMClass library allows for writing objected-oriented code in lua! There 
 
 ## Documentation
 
-See the docs (TODO: link) for complete documentation and usage.
+See [the docs](https://tradeskillmaster.github.io/LibTSMClass) for complete documentation and usage.
 
 ## Installation
 
