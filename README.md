@@ -55,7 +55,7 @@ print(obj:GetValue()) -- 15
 
 ## LuaLS Plugin
 
-A [plugin](LuaLSPlugin/LibTSMClassLuaLSPlugin.lua) for [LuaLS](https://github.com/LuaLS/lua-language-server) is provided to allow for better handling of classes defined with LibTSMClass.
+A [plugin](LuaLSPlugin/LibTSMClassLuaLSPlugin.lua) for [LuaLS](https://github.com/LuaLS/lua-language-server) is provided to allow for better handling of classes defined with LibTSMClass. The plugin exposes a `.OnSetText(uri, text)` function which can be called by your own plugin as well as a few other useful functions for more custom integrations.
 
 ## License and Contributes
 
