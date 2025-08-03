@@ -142,7 +142,7 @@ function Plugin.OnSetText(uri, text)
 		table.insert(lines, str)
 		lines[str] = startPos
 	end
-    return Plugin.ProcessFileLines(lines)
+	return Plugin.ProcessFileLines(lines)
 end
 
 return Plugin
