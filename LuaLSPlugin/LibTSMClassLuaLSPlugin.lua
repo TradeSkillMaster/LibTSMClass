@@ -80,10 +80,10 @@ function Plugin.DefineClassHelper(className, parentClassName, text, fileLines)
 	return table.concat(lines, "\n").."\n"
 end
 
-function Plugin.ProcessFileLines(lines)
+function Plugin.ProcessFileLines(lines, lineStartPos)
 	local diffs = nil
 	for i, line in ipairs(lines) do
-		local lineStart = lines[line]
+		local lineStart = lineStartPos[i]
 
 		-- Look for function definitions
 		local modifierStart, modifier, modifierEnd, modifierColonOrDot = line:match("^function [A-Za-z0-9_]+()%.__([a-z]+)()([:%.])[A-Za-z0-9_]+%(")
@@ -119,7 +119,7 @@ function Plugin.ProcessFileLines(lines)
 				end
 				local startPos = line2:match("()self%._[a-zA-Z0-9_]+%s*=")
 				if startPos then
-					startPos = startPos + lines[line2] - 1
+					startPos = startPos + lineStartPos[j] - 1
 					diffs = AddDiff(diffs, startPos, nil, "---@protected\n")
 				end
 			end
@@ -137,12 +137,12 @@ end
 
 function Plugin.OnSetText(uri, text)
 	-- Split the file into lines for easier parsing
-	local lines = {}
+	local lines, lineStartPos = {}, {}
 	for startPos, str in text:gmatch("()(.-)\r?\n") do
 		table.insert(lines, str)
-		lines[str] = startPos
+		table.insert(lineStartPos, startPos)
 	end
-	return Plugin.ProcessFileLines(lines)
+	return Plugin.ProcessFileLines(lines, lineStartPos)
 end
 
 return Plugin
