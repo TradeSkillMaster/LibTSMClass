@@ -57,6 +57,6 @@ print(obj:GetValue()) -- 15
 
 A [plugin](LuaLSPlugin/LibTSMClassLuaLSPlugin.lua) for [LuaLS](https://github.com/LuaLS/lua-language-server) is provided to allow for better handling of classes defined with LibTSMClass. The plugin exposes a `.OnSetText(uri, text)` function which can be called by your own plugin as well as a few other useful functions for more custom integrations.
 
-## License and Contributes
+## License and Contributions
 
 LibTSMClass is licensed under the MIT license. See LICENSE.txt for more information. If you would like to contribute to LibTSMClass, opening an issue or submitting a pull request against the [LibTSMClass GitHub project](https://github.com/TradeSkillMaster/LibTSMClass) is highly encouraged.
