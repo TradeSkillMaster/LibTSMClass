@@ -27,21 +27,21 @@ A basic example of the library is below:
 local LibTSMClass = LibStub("LibTSMClass")
 local MyClass = LibTSMClass.DefineClass("MyClass")
 
-function MyClass.__init(self, value)
+function MyClass:__init(value)
 	self._value = value
 end
 
-function MyClass.GetValue(self)
+function MyClass:GetValue()
 	return self._value
 end
 
-function MyClass.SetValue(self, value)
+function MyClass:SetValue(value)
 	self._value = value
 end
 
 local MySubClass = LibTSMClass.DefineClass("MySubClass", MyClass)
 
-function MySubClass.AddValue(self, value)
+function MySubClass:AddValue(value)
 	self:SetValue(self:GetValue() + value)
 end
 

@@ -44,10 +44,10 @@ print(MyClass.staticValue) -- prints 31
 Classes define their methods by simply defining the functions on the class object which was previously created.
 
 ```lua
-function MyClass.SayHi(self)
+function MyClass:SayHi()
 	print("Hello from MyClass!")
 end
-function MyClass.GetValue(self)
+function MyClass:GetValue()
 	return self._value
 end
 ```
@@ -68,10 +68,10 @@ print(MyClass.GetSecretNumber()) -- prints 802
 The constructor is a special class method with a name of `__init()` and is called whenever a class is instantiated. Any arguments passed when instantiating the class will be passed along to the constructor. Note that the constructor should never return any values.
 
 ```lua
-function MyClass.__init(self, value)
+function MyClass:__init(value)
 	self._value = value
 end
-function MyClass.GetValue(self)
+function MyClass:GetValue()
 	return self._value
 end
 local classInst = MyClass(42)
@@ -84,7 +84,7 @@ Classes can be sub-classed by specifying their base class when defining them. An
 
 ```lua
 local MySubClass = LibTSMClass.DefineClass("MySubClass", MyClass)
-function MySubClass.SayHi(self)
+function MySubClass:SayHi()
 	print("Hello from MySubClass")
 end
 ```
@@ -94,10 +94,10 @@ end
 In order to explicitly access a method or attribute of the parent class, the `__super` attribute can be used. This is generally used to call the parent class's implementation of a given method. Note that the `__super` attribute can only be accessed from within a class method. This attribute can be used multiple times to continue to walk up the chain of parent classes for cases where there is more than one level of sub-classing.
 
 ```lua
-function MySubClass.SayHiAll(self)
+function MySubClass:SayHiAll()
 	print("Hello from MySubClass")
 end
-function MySubClass.GetValue(self)
+function MySubClass:GetValue()
 	return self.__super:GetValue() + 2
 end
 ```
@@ -113,7 +113,7 @@ print(MySubClass.__super.staticValue) -- prints 2
 Another mechanism for accessing an explicit parent class from a subclass is by using the special `__as` instance method. This can be especially useful when there is a long chain of inheritance.
 
 ```lua
-function MySubClass.GetValue(self)
+function MySubClass:GetValue()
 	return self:__as(MyClass):GetValue() + 2
 end
 ```
@@ -123,10 +123,10 @@ end
 Classes can define `private` methods which can only be accessed by the class itself. In other words, these methods can only be called from within another method of the same class or within a static function of the class. Private methods are defined by creating them against the `__private` property of the class.
 
 ```lua
-function MyClass.__private._HashRound(self, x, y)
+function MyClass.__private:_HashRound(x, y)
 	return x * 44 + x * y
 end
-function MyClass.PoorlyHash(self, x)
+function MyClass:PoorlyHash(x)
 	return self:_HashRound(x - 1, x + 1)
 end
 ```
@@ -142,7 +142,7 @@ Classes can define `protected` methods which behave like private methods, but ca
 Every class and instance has a special `__tostring()` method which can be used to convert it to a string. This is generally useful for debugging. Classes can override this method in order to provide a custom implementation.
 
 ```lua
-function MySubClass.__tostring(self)
+function MySubClass:__tostring()
 	return "MySubClass with a value of "..self._value
 end
 local classInst = MyClass(0)
@@ -196,7 +196,7 @@ print(classInst:__isa(MySubClass)) -- prints false
 A class with private or protected methods may want to allow calling those methods from outside of another method of the class, which would generally not be allowed. This can be accomplished using the `__closure` method.
 
 ```lua
-function MyClass.__private._EventHandler(self, eventName)
+function MyClass.__private:_EventHandler(eventName)
 	print("Handling event: "..eventName)
 end
 local classInst = MyClass(3)
@@ -208,13 +208,13 @@ Event.RegisterHandler(classInst:__closure("_EventHandler"))
 One of the most powerful features of LibTSMClass is support for virtual class methods. What this means is that within a base class method, an instance of a class is still treated as its an instance of its actual class, not the base class. This is best demonstrated with an example:
 
 ```lua
-function MyClass.GetMagicNumber(self)
+function MyClass:GetMagicNumber()
 	return 99
 end
-function MyClass.PrintMagicNumber(self)
+function MyClass:PrintMagicNumber()
 	print(self:GetMagicNumber())
 end
-function MySubClass.GetMagicNumber(self)
+function MySubClass:GetMagicNumber()
 	return 88
 end
 local subClassInst = MySubClass(0)
@@ -224,6 +224,7 @@ subClassInst:PrintMagicNumber() -- prints 88
 ## Abstract Classes
 
 An abstract class is one which can't be directly instantiated. Other than this restriction, abstract classes behave exactly the same as normal classes, including the ability to be sub-classed. This is useful in order to define a common interface which multiple child classes are expected to adhere to. An abstract class is defined by passing an extra argument when defining the class as shown below:
+
 ```lua
 local AbstractClass = LibTSMClass.DefineClass("AbstractClass", nil, "ABSTRACT")
 
@@ -235,17 +236,39 @@ local ImplClass = LibTSMClass.DefineClass("ImplClass", AbstractClass)
 Abstract classes may define abstract methods which subclasses are required to implement. This is done by defining an empty function against the `__abstract` table. Note that this function doesn't strictly need to be empty, but is never called (or even stored anywhere within LibTSMClass). Abstract class methods are **always implicitly protected**, so must be overridden as such.
 
 ```lua
-function AbstractClass.__abstract._GetResult(self)
+function AbstractClass.__abstract:_GetResult()
 end
 
-function AbstractClass.AddNumber(self, num)
+function AbstractClass:AddNumber(num)
 	return num + self:_GetResult()
 end
 
-function ImplClass.__protected._GetResult(self)
+function ImplClass.__protected:_GetResult()
 	return 10
 end
 
 local inst = ImplClass()
 print(inst:AddNumber(2)) -- prints 12
 ```
+
+## Extensions
+
+Extensions allow for adding additional functionality to classes after they are defined. This can enable higher-level code to add functionality to classes which are defined in utility libraries while maintaining separation of concerns.
+
+```lua
+
+local MySubClassExtension = MySubClass:__extend()
+
+function MySubClassExtension:GetNegativeMagicNumber()
+	return self:GetMagicNumber() * -1
+end
+
+local inst = MySubClass(0)
+print(inst:GetNegativeMagicNumber()) -- prints -88
+```
+
+There are a few restrictions on extension methods:
+
+1. All extension methods are defined as public.
+2. They cannot access private or protected methods of the class.
+3. They can only be created on classes which aren't subclassed.
