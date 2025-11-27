@@ -513,7 +513,7 @@ private.EXTENSION_MT = {
 			rawset(inst, key, value)
 		end
 	end,
-	__index = function(self, key)
+	__index = function()
 		error("Extension objects are write-only", 2)
 	end,
 	__tostring = function(self)
