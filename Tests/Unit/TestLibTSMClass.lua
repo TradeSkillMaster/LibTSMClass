@@ -671,6 +671,44 @@ function TestLibTSMClass.TestErrors()
 	luaunit.assertErrorMsgContains("Attempting to call private method (GetC) from outside of class", function() inst:CallPrivate() end)
 end
 
+function TestLibTSMClass.TestGC()
+	local TestGC = LibTSMClass.DefineClass("TestGC")
+	local inst1 = TestGC()
+
+	local instances = setmetatable({}, { __mode = "kv" })
+	instances[inst1] = true
+
+	inst1 = nil
+
+	luaunit.assertNotEquals(instances, {})
+	collectgarbage()
+	luaunit.assertEquals(instances, {})
+end
+
+function TestLibTSMClass.TestExtend()
+	local TestExtend = LibTSMClass.DefineClass("TestExtend")
+	function TestExtend.__private:_GetPrivateValue()
+		return 45
+	end
+
+	local inst1 = TestExtend()
+
+	local TestExtendExtensions = TestExtend:__extend()
+
+	function TestExtendExtensions:GetValue()
+		return 21
+	end
+
+	luaunit.assertEquals(inst1:GetValue(), 21)
+	luaunit.assertEquals(TestExtend():GetValue(), 21)
+
+	function TestExtendExtensions:GetValue2()
+		return self:_GetPrivateValue()
+	end
+
+	luaunit.assertErrorMsgContains("Attempting to call private method (_GetPrivateValue) from outside of class", function() inst1:GetValue2() end)
+end
+
 
 
 os.exit(luaunit.LuaUnit.run())

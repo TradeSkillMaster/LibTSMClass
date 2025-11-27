@@ -6,22 +6,21 @@
 
 local MINOR_REVISION = 2
 local Lib = {} ---@class LibTSMClass
-local private = { classInfo = {}, instInfo = {}, constructTbl = nil, tempTable = {} }
--- Set the keys as weak so that instances of classes can be GC'd (classes are never GC'd)
-setmetatable(private.instInfo, { __mode = "k" })
+local private = {
+	classInfo = {},
+	extensionInfo = {},
+	instInfo = {},
+	constructTbl = nil,
+	tempTable = {},
+}
+-- Set the keys as weak so that class extensions and instances of classes can be GC'd (classes are never GC'd)
+local WEAK_KEY_MT = { __mode = "k" }
+setmetatable(private.extensionInfo, WEAK_KEY_MT)
+setmetatable(private.instInfo, WEAK_KEY_MT)
 local SPECIAL_PROPERTIES = {
 	__init = true,
 	__tostring = true,
 	__dump = true,
-	__class = true,
-	__isa = true,
-	__super = true,
-	__name = true,
-	__as = true,
-	__static = true,
-	__private = true,
-	__protected = true,
-	__abstract = true,
 }
 local RESERVED_KEYS = {
 	__super = true,
@@ -34,10 +33,11 @@ local RESERVED_KEYS = {
 	__protected = true,
 	__abstract = true,
 	__closure = true,
+	__extend = true,
 }
 local DEFAULT_INST_FIELDS = {
 	__init = function(self)
-		-- do nothing
+		-- Do nothing
 	end,
 	__tostring = function(self)
 		return private.instInfo[self].str
@@ -91,8 +91,10 @@ function Lib.DefineClass(name, superclass, ...)
 		abstract = abstract,
 		referenceType = nil,
 		subclassed = false,
-		methodProperties = nil, -- set as needed
+		extended = false,
+		methodProperties = nil, -- Set as needed
 		inClassFunc = 0,
+		instances = setmetatable({}, WEAK_KEY_MT),
 	}
 	while superclass do
 		local superclassInfo = private.classInfo[superclass]
@@ -104,6 +106,9 @@ function Lib.DefineClass(name, superclass, ...)
 					properties = superclassInfo.methodProperties and superclassInfo.methodProperties[key] or nil,
 				}
 			end
+		end
+		if superclassInfo.extended then
+			error("Cannot subclass a class after it's extended", 2)
 		end
 		superclassInfo.subclassed = true
 		superclass = superclass.__super
@@ -161,7 +166,7 @@ private.INST_MT = {
 		if private.classInfo[self.__class].static[key] ~= nil then
 			private.classInfo[self.__class].static[key] = value
 		elseif not private.instInfo[self].hasSuperclass then
-			-- we just set this directly on the instance table for better performance
+			-- We just set this directly on the instance table for better performance
 			rawset(self, key, value)
 		else
 			private.instInfo[self].fields[key] = value
@@ -242,8 +247,8 @@ private.CLASS_MT = {
 			error("Can't index class with non-string key", 2)
 		end
 		local classInfo = private.classInfo[self]
-		if classInfo.subclassed then
-			error("Can't modify classes after they are subclassed", 2)
+		if classInfo.subclassed or classInfo.extended then
+			error("Can't modify classes after they are subclassed or extended", 2)
 		end
 		if classInfo.static[key] then
 			error("Can't modify or override static members", 2)
@@ -375,6 +380,8 @@ private.CLASS_MT = {
 			end
 			classInfo.referenceType = "ABSTRACT"
 			return self
+		elseif key == "__extend" then
+			return private.ClassExtend
 		elseif classInfo.static[key] ~= nil then
 			return classInfo.static[key]
 		elseif classInfo.superStatic[key] then
@@ -407,6 +414,7 @@ private.CLASS_MT = {
 			currentClass = nil,
 			closures = {},
 		}
+		classInfo.instances[inst] = true
 		if not hasSuperclass then
 			-- Set the static members directly on this object for better performance
 			for key, value in pairs(classInfo.static) do
@@ -471,6 +479,52 @@ private.CLASS_MT = {
 
 
 -- ============================================================================
+-- Extension Metatable
+-- ============================================================================
+
+private.EXTENSION_MT = {
+	__newindex = function(self, key, value)
+		if type(key) ~= "string" then
+			error("Can't index class extension with non-string key", 2)
+		elseif type(value) ~= "function" then
+			error("Can only add class methods via class extension", 2)
+		elseif RESERVED_KEYS[key] then
+			error("Reserved word: "..key, 2)
+		end
+		local class = private.extensionInfo[self].class
+		local classInfo = private.classInfo[class]
+		if classInfo.subclassed then
+			error("Can't add extension methods after a class is subclassed", 2)
+		end
+		local testClass = class
+		while testClass do
+			local testClassInfo = private.classInfo[testClass]
+			if testClassInfo.static[key] ~= nil then
+				error("Can't modify or override class members from extension", 2)
+			end
+			testClass = testClassInfo.superclass
+		end
+		-- Don't need to wrap extension methods because they are treated as if they are outside
+		-- the class as far as access restrictions are concerned and don't need to worry about
+		-- virtual methods since extensions only support non-subclassed classes.
+		classInfo.static[key] = value
+		-- Add the new method directly to all previously-created instances
+		for inst in pairs(classInfo.instances) do
+			rawset(inst, key, value)
+		end
+	end,
+	__index = function(self, key)
+		error("Extension objects are write-only", 2)
+	end,
+	__tostring = function(self)
+		return "classExtension:"..private.classInfo[private.extensionInfo[self].class].name
+	end,
+	__metatable = false,
+}
+
+
+
+-- ============================================================================
 -- Helper Functions
 -- ============================================================================
 
@@ -479,6 +533,21 @@ function private.ClassIsA(class, targetClass)
 		if class == targetClass then return true end
 		class = class.__super
 	end
+end
+
+function private.ClassExtend(class)
+	local classInfo = private.classInfo[class]
+	if not classInfo then
+		error("__extend() must be called with `:` to pass the class", 2)
+	elseif classInfo.subclassed then
+		error("Can't add extension methods after a class is subclassed", 2)
+	end
+	classInfo.extended = true
+	local extensionObj = setmetatable({}, private.EXTENSION_MT)
+	private.extensionInfo[extensionObj] = {
+		class = class,
+	}
+	return extensionObj
 end
 
 function private.InstMethodReturnHelper(class, instInfo, classInfo, ...)
