@@ -266,7 +266,12 @@ private.CLASS_MT = {
 			classInfo.methodProperties[key] = "STATIC"
 			-- We wrap static methods so that we can allow private or protected access within them
 			classInfo.static[key] = function(...)
-				classInfo.inClassFunc = classInfo.inClassFunc + 1
+				local tempMethodClassInfo = classInfo
+				while tempMethodClassInfo do
+					tempMethodClassInfo.inClassFunc = tempMethodClassInfo.inClassFunc + 1
+					local superclass = tempMethodClassInfo.superclass
+					tempMethodClassInfo = superclass and private.classInfo[superclass] or nil
+				end
 				return private.StaticFuncReturnHelper(classInfo, value(...))
 			end
 		elseif isFunction and not isStatic then
@@ -340,10 +345,16 @@ private.CLASS_MT = {
 					error(format("Attempting to call private method (%s) from outside of class", key), 2)
 				end
 				if isProtected and prevMethodClass == nil and classInfo.inClassFunc == 0 then
+					-- Check if we're in a super class func
 					error(format("Attempting to call protected method (%s) from outside of class", key), 2)
 				end
 				instInfo.methodClass = self
-				classInfo.inClassFunc = classInfo.inClassFunc + 1
+				local tempMethodClassInfo = classInfo
+				while tempMethodClassInfo do
+					tempMethodClassInfo.inClassFunc = tempMethodClassInfo.inClassFunc + 1
+					local tempSuperclass = tempMethodClassInfo.superclass
+					tempMethodClassInfo = tempSuperclass and private.classInfo[tempSuperclass] or nil
+				end
 				return private.InstMethodReturnHelper(prevMethodClass, instInfo, classInfo, value(inst, ...))
 			end
 		elseif not isFunction then
@@ -553,13 +564,21 @@ end
 function private.InstMethodReturnHelper(class, instInfo, classInfo, ...)
 	-- Reset methodClass and decrement inClassFunc now that the function returned
 	instInfo.methodClass = class
-	classInfo.inClassFunc = classInfo.inClassFunc - 1
+	while classInfo do
+		classInfo.inClassFunc = classInfo.inClassFunc - 1
+		local superclass = classInfo.superclass
+		classInfo = superclass and private.classInfo[superclass] or nil
+	end
 	return ...
 end
 
 function private.StaticFuncReturnHelper(classInfo, ...)
 	-- Decrement inClassFunc now that the function returned
-	classInfo.inClassFunc = classInfo.inClassFunc - 1
+	while classInfo do
+		classInfo.inClassFunc = classInfo.inClassFunc - 1
+		local superclass = classInfo.superclass
+		classInfo = superclass and private.classInfo[superclass] or nil
+	end
 	return ...
 end
 
@@ -628,7 +647,12 @@ function private.InstClosure(inst, methodName)
 				-- Pretend we are within the class which created the closure
 				local prevClass = instInfo.methodClass
 				instInfo.methodClass = methodClass
-				methodClassInfo.inClassFunc = methodClassInfo.inClassFunc + 1
+				local tempMethodClassInfo = methodClassInfo
+				while tempMethodClassInfo do
+					tempMethodClassInfo.inClassFunc = tempMethodClassInfo.inClassFunc + 1
+					local superclass = tempMethodClassInfo.superclass
+					tempMethodClassInfo = superclass and private.classInfo[superclass] or nil
+				end
 				return private.InstMethodReturnHelper(prevClass, instInfo, methodClassInfo, methodFunc(inst, ...))
 			end
 		end
