@@ -390,6 +390,13 @@ function TestLibTSMClass.TestProtectedInit()
 		return inst
 	end
 
+	local TestProtectedInitSubSub = LibTSMClass.DefineClass("TestProtectedInitSubSub", TestProtectedInitSub)
+	function TestProtectedInitSubSub.__static.Create(value, value3)
+		local inst = TestProtectedInitSubSub(value, value3)
+		inst:_SetValue2(value + 1)
+		return inst
+	end
+
 	luaunit.assertErrorMsgContains("Attempting to call protected method (__init) from outside of class", function() TestProtectedInit(12) end)
 	luaunit.assertErrorMsgContains("Attempting to call protected method (__init) from outside of class", function() TestProtectedInitSub(12) end)
 
@@ -400,6 +407,11 @@ function TestLibTSMClass.TestProtectedInit()
 	local testInstSub = TestProtectedInitSub.Create(42, 11)
 	luaunit.assertEquals(testInstSub.value, 42)
 	luaunit.assertEquals(testInstSub.value2, -42)
+	luaunit.assertEquals(testInstSub.value3, 11)
+
+	local testInstSub = TestProtectedInitSubSub.Create(42, 11)
+	luaunit.assertEquals(testInstSub.value, 42)
+	luaunit.assertEquals(testInstSub.value2, 43)
 	luaunit.assertEquals(testInstSub.value3, 11)
 end
 
