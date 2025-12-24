@@ -1,0 +1,128 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notes, Limitations, and Gotchas &mdash; LibTSMClass  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/lua.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API" href="api.html" />
+    <link rel="prev" title="Features" href="features.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LibTSMClass
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1"><a class="reference internal" href="features.html">Features</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Notes, Limitations, and Gotchas</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#instance-variable-access-restrictions-private-protected">Instance Variable Access Restrictions (Private / Protected)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#classes-are-immutable-and-should-be-atomically-defined">Classes are Immutable and Should be Atomically Defined</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#highly-performant-base-classes">Highly-Performant Base Classes</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LibTSMClass</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Notes, Limitations, and Gotchas</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="notes-limitations-and-gotchas">
+<h1>Notes, Limitations, and Gotchas<a class="headerlink" href="#notes-limitations-and-gotchas" title="Link to this heading"></a></h1>
+<section id="instance-variable-access-restrictions-private-protected">
+<h2>Instance Variable Access Restrictions (Private / Protected)<a class="headerlink" href="#instance-variable-access-restrictions-private-protected" title="Link to this heading"></a></h2>
+<p>All instance variables are publicly accessible. Extending the private / protected access controls to cover instance variables may be added in the future. A general convention of adding an leading underscore to things which shouldn’t be used externally (i.e. private members / methods) is encouraged. If true private members are needed, another alternative is to create scope-limited lookup tables or functions within the file where the class is defined.</p>
+</section>
+<section id="classes-are-immutable-and-should-be-atomically-defined">
+<h2>Classes are Immutable and Should be Atomically Defined<a class="headerlink" href="#classes-are-immutable-and-should-be-atomically-defined" title="Link to this heading"></a></h2>
+<p>One gotcha of LibTSMClass is that all methods and static fields of a class must be fully defined before that class is subclassed or instantiated. This means that changing the definition of a class at runtime is not supported, and may lead to undefined behavior. Along the same lines, once a class’s methods are defined, they may not be changed later on.</p>
+</section>
+<section id="highly-performant-base-classes">
+<h2>Highly-Performant Base Classes<a class="headerlink" href="#highly-performant-base-classes" title="Link to this heading"></a></h2>
+<p>Inheritance is one of the most powerful uses of OOP, and LibTSMClass fully supports it. However, for cases where performance is of the utmost importance, LibTSMClass is heavily optimized to reduce the overhead of a class which does not subclass anything to be as close to direct table access as possible (without metamethod calls).</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="features.html" class="btn btn-neutral float-left" title="Features" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

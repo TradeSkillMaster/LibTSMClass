@@ -1,0 +1,394 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Features &mdash; LibTSMClass  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/lua.css" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Notes, Limitations, and Gotchas" href="notes.html" />
+    <link rel="prev" title="LibTSMClass" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            LibTSMClass
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="index.html">Home</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Features</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#class-definition">Class Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#instantiation">Instantiation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#static-attributes">Static Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#method-definition">Method Definition</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#static-class-functions">Static Class Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#constructor">Constructor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#inheritance">Inheritance</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#accessing-the-base-class">Accessing the Base Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#private-class-methods">Private Class Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#protected-class-methods">Protected Class Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#other-useful-attributes">Other Useful Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tostring"><code class="docutils literal notranslate"><span class="pre">__tostring()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#equals"><code class="docutils literal notranslate"><span class="pre">__equals()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#name"><code class="docutils literal notranslate"><span class="pre">__name</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dump"><code class="docutils literal notranslate"><span class="pre">__dump()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#class"><code class="docutils literal notranslate"><span class="pre">__class</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#isa"><code class="docutils literal notranslate"><span class="pre">__isa()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#closure"><code class="docutils literal notranslate"><span class="pre">__closure()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#virtual-methods">Virtual Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#abstract-classes">Abstract Classes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#abstract-class-methods">Abstract Class Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#extensions">Extensions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="notes.html">Notes, Limitations, and Gotchas</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">LibTSMClass</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Features</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="features">
+<h1>Features<a class="headerlink" href="#features" title="Link to this heading"></a></h1>
+<section id="class-definition">
+<h2>Class Definition<a class="headerlink" href="#class-definition" title="Link to this heading"></a></h2>
+<p>To define a new class, simply use the <code class="docutils literal notranslate"><span class="pre">LibTSMClass.DefineClass()</span></code> method of the library:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">MyClass</span> <span class="o">=</span> <span class="n">LibTSMClass</span><span class="p">.</span><span class="n">DefineClass</span><span class="p">(</span><span class="s2">&quot;MyClass&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This function takes at least one argument, which is the name of the class. This class name is primarily used to make debugging easier, by leveraging it in the <code class="docutils literal notranslate"><span class="pre">__tostring()</span></code> metamethod for both the class and instances of the class.</p>
+</section>
+<section id="instantiation">
+<h2>Instantiation<a class="headerlink" href="#instantiation" title="Link to this heading"></a></h2>
+<p>The class can be called as a function to create an instance of the class.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>If a table containing existing attributes already exists, it can be converted into an instance of the class via the <code class="docutils literal notranslate"><span class="pre">LibTSMClass.ConstructWithTable()</span></code> method.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">tbl</span> <span class="o">=</span> <span class="p">{</span> <span class="n">existingValue</span> <span class="o">=</span> <span class="mi">2</span> <span class="p">}</span>
+<span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">LibTSMClass</span><span class="p">.</span><span class="n">ConstructWithTable</span><span class="p">(</span><span class="n">tbl</span><span class="p">,</span> <span class="n">MyClass</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">.</span><span class="n">existingValue</span><span class="p">)</span> <span class="c1">-- prints 2</span>
+</pre></div>
+</div>
+</section>
+<section id="static-attributes">
+<h2>Static Attributes<a class="headerlink" href="#static-attributes" title="Link to this heading"></a></h2>
+<p>Static fields are allowed on all classes and can be accessed by instances of the class. Note that modifying the value of a static field on an instance of the class creates a new property on the instance and does not modify the class’s static value.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">.</span><span class="n">staticValue</span> <span class="o">=</span> <span class="mi">31</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="p">.</span><span class="n">staticValue</span><span class="p">)</span> <span class="c1">-- prints 31</span>
+<span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">.</span><span class="n">staticValue</span><span class="p">)</span> <span class="c1">-- prints 31</span>
+<span class="n">classInst</span><span class="p">.</span><span class="n">staticValue</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">.</span><span class="n">staticValue</span><span class="p">)</span> <span class="c1">-- prints 2</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="p">.</span><span class="n">staticValue</span><span class="p">)</span> <span class="c1">-- prints 31</span>
+</pre></div>
+</div>
+</section>
+<section id="method-definition">
+<h2>Method Definition<a class="headerlink" href="#method-definition" title="Link to this heading"></a></h2>
+<p>Classes define their methods by simply defining the functions on the class object which was previously created.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">SayHi</span><span class="p">()</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello from MyClass!&quot;</span><span class="p">)</span>
+<span class="kr">end</span>
+<span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">GetValue</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_value</span>
+<span class="kr">end</span>
+</pre></div>
+</div>
+</section>
+<section id="static-class-functions">
+<h2>Static Class Functions<a class="headerlink" href="#static-class-functions" title="Link to this heading"></a></h2>
+<p>Static class functions (not instance methods) can be defined via the <code class="docutils literal notranslate"><span class="pre">__static</span></code> property.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MyClass</span><span class="p">.</span><span class="nc">__static</span><span class="p">.</span><span class="nf">GetSecretNumber</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="mi">802</span>
+<span class="kr">end</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="p">.</span><span class="n">GetSecretNumber</span><span class="p">())</span> <span class="c1">-- prints 802</span>
+</pre></div>
+</div>
+</section>
+<section id="constructor">
+<h2>Constructor<a class="headerlink" href="#constructor" title="Link to this heading"></a></h2>
+<p>The constructor is a special class method with a name of <code class="docutils literal notranslate"><span class="pre">__init()</span></code> and is called whenever a class is instantiated. Any arguments passed when instantiating the class will be passed along to the constructor. Note that the constructor should never return any values.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">__init</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+	<span class="n">self</span><span class="p">.</span><span class="n">_value</span> <span class="o">=</span> <span class="n">value</span>
+<span class="kr">end</span>
+<span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">GetValue</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_value</span>
+<span class="kr">end</span>
+<span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">:</span><span class="n">GetValue</span><span class="p">())</span> <span class="c1">-- prints 42</span>
+</pre></div>
+</div>
+</section>
+<section id="inheritance">
+<h2>Inheritance<a class="headerlink" href="#inheritance" title="Link to this heading"></a></h2>
+<p>Classes can be sub-classed by specifying their base class when defining them. Any methods which are defined on the base class can then be overridden. The subclass is also allowed to access any methods or properties of its base class.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">MySubClass</span> <span class="o">=</span> <span class="n">LibTSMClass</span><span class="p">.</span><span class="n">DefineClass</span><span class="p">(</span><span class="s2">&quot;MySubClass&quot;</span><span class="p">,</span> <span class="n">MyClass</span><span class="p">)</span>
+<span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">SayHi</span><span class="p">()</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello from MySubClass&quot;</span><span class="p">)</span>
+<span class="kr">end</span>
+</pre></div>
+</div>
+</section>
+<section id="accessing-the-base-class">
+<h2>Accessing the Base Class<a class="headerlink" href="#accessing-the-base-class" title="Link to this heading"></a></h2>
+<p>In order to explicitly access a method or attribute of the parent class, the <code class="docutils literal notranslate"><span class="pre">__super</span></code> attribute can be used. This is generally used to call the parent class’s implementation of a given method. Note that the <code class="docutils literal notranslate"><span class="pre">__super</span></code> attribute can only be accessed from within a class method. This attribute can be used multiple times to continue to walk up the chain of parent classes for cases where there is more than one level of sub-classing.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">SayHiAll</span><span class="p">()</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Hello from MySubClass&quot;</span><span class="p">)</span>
+<span class="kr">end</span>
+<span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">GetValue</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">.</span><span class="n">__super</span><span class="p">:</span><span class="n">GetValue</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="kr">end</span>
+</pre></div>
+</div>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">__super</span></code> may also be used on class objects themselves, including outside of any class methods.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="n">MyClass</span><span class="p">.</span><span class="n">staticValue</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">MySubClass</span><span class="p">.</span><span class="n">staticValue</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">MySubClass</span><span class="p">.</span><span class="n">__super</span><span class="p">.</span><span class="n">staticValue</span><span class="p">)</span> <span class="c1">-- prints 2</span>
+</pre></div>
+</div>
+<p>Another mechanism for accessing an explicit parent class from a subclass is by using the special <code class="docutils literal notranslate"><span class="pre">__as</span></code> instance method. This can be especially useful when there is a long chain of inheritance.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">GetValue</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">:</span><span class="n">__as</span><span class="p">(</span><span class="n">MyClass</span><span class="p">):</span><span class="n">GetValue</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="kr">end</span>
+</pre></div>
+</div>
+</section>
+<section id="private-class-methods">
+<h2>Private Class Methods<a class="headerlink" href="#private-class-methods" title="Link to this heading"></a></h2>
+<p>Classes can define <code class="docutils literal notranslate"><span class="pre">private</span></code> methods which can only be accessed by the class itself. In other words, these methods can only be called from within another method of the same class or within a static function of the class. Private methods are defined by creating them against the <code class="docutils literal notranslate"><span class="pre">__private</span></code> property of the class.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MyClass</span><span class="p">.</span><span class="nc">__private</span><span class="p">:</span><span class="nf">_HashRound</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+	<span class="kr">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">44</span> <span class="o">+</span> <span class="n">x</span> <span class="o">*</span> <span class="n">y</span>
+<span class="kr">end</span>
+<span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">PoorlyHash</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">:</span><span class="n">_HashRound</span><span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="kr">end</span>
+</pre></div>
+</div>
+</section>
+<section id="protected-class-methods">
+<h2>Protected Class Methods<a class="headerlink" href="#protected-class-methods" title="Link to this heading"></a></h2>
+<p>Classes can define <code class="docutils literal notranslate"><span class="pre">protected</span></code> methods which behave like private methods, but can also be accessed by subclasses of the class. Protected methods are defined by creating them against the <code class="docutils literal notranslate"><span class="pre">__protected</span></code> property of the class (in a similar manner to example above for private methods).</p>
+</section>
+<section id="other-useful-attributes">
+<h2>Other Useful Attributes<a class="headerlink" href="#other-useful-attributes" title="Link to this heading"></a></h2>
+</section>
+<section id="tostring">
+<h2><code class="docutils literal notranslate"><span class="pre">__tostring()</span></code><a class="headerlink" href="#tostring" title="Link to this heading"></a></h2>
+<p>Every class and instance has a special <code class="docutils literal notranslate"><span class="pre">__tostring()</span></code> method which can be used to convert it to a string. This is generally useful for debugging. Classes can override this method in order to provide a custom implementation.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">__tostring</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="s2">&quot;MySubClass with a value of &quot;</span><span class="o">..</span><span class="n">self</span><span class="p">.</span><span class="n">_value</span>
+<span class="kr">end</span>
+<span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">)</span> <span class="c1">-- prints &quot;MyClass:00B8C688&quot;</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">MySubClass</span><span class="p">)</span> <span class="c1">-- prints &quot;class:MySubClass&quot;</span>
+<span class="kd">local</span> <span class="n">subClassInst</span> <span class="o">=</span> <span class="n">MySubClass</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">subClassInst</span><span class="p">)</span> <span class="c1">-- prints &quot;MySubClass with a value of 3&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="equals">
+<h2><code class="docutils literal notranslate"><span class="pre">__equals()</span></code><a class="headerlink" href="#equals" title="Link to this heading"></a></h2>
+<p>Every class and instance has a special <code class="docutils literal notranslate"><span class="pre">__equals()</span></code> method which can be used to implement custom equality logic. Note that this method is only called if the objects being compared are of the same exact class (parent classes don’t count and will never be equal).</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">__equals</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_value</span> <span class="o">==</span> <span class="n">other</span><span class="p">.</span><span class="n">_value</span>
+<span class="kr">end</span>
+<span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span> <span class="o">==</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="c1">-- prints &quot;true&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="name">
+<h2><code class="docutils literal notranslate"><span class="pre">__name</span></code><a class="headerlink" href="#name" title="Link to this heading"></a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">__name</span></code> attribute is provided on all classes to look up the name of the class.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">MyClass</span><span class="p">.</span><span class="n">__name</span><span class="p">)</span> <span class="c1">-- prints &quot;MyClass&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="dump">
+<h2><code class="docutils literal notranslate"><span class="pre">__dump()</span></code><a class="headerlink" href="#dump" title="Link to this heading"></a></h2>
+<p>All instances have a special <code class="docutils literal notranslate"><span class="pre">__dump()</span></code> method which can be used to pretty-print the fields of class for debugging. Similarly to <code class="docutils literal notranslate"><span class="pre">__tostring()</span></code>, the default implementation may be overridden in order to provide a custom implementation.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">classInst</span><span class="p">:</span><span class="n">__dump</span><span class="p">()</span>
+<span class="c1">-- MyClass:00B8C688 {</span>
+<span class="c1">--     _value = 0</span>
+<span class="c1">-- }</span>
+</pre></div>
+</div>
+</section>
+<section id="class">
+<h2><code class="docutils literal notranslate"><span class="pre">__class</span></code><a class="headerlink" href="#class" title="Link to this heading"></a></h2>
+<p>The special <code class="docutils literal notranslate"><span class="pre">__class</span></code> field is provided on every instance in order to introspect the class to which the instance belongs.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">.</span><span class="n">__class</span><span class="p">)</span> <span class="c1">-- prints &quot;class:MyClass&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="isa">
+<h2><code class="docutils literal notranslate"><span class="pre">__isa()</span></code><a class="headerlink" href="#isa" title="Link to this heading"></a></h2>
+<p>In order to test whether or not an instance belongs to a given class, the <code class="docutils literal notranslate"><span class="pre">__isa</span></code> method is provided on all instances.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">:</span><span class="n">__isa</span><span class="p">(</span><span class="n">MyClass</span><span class="p">))</span> <span class="c1">-- prints true</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">classInst</span><span class="p">:</span><span class="n">__isa</span><span class="p">(</span><span class="n">MySubClass</span><span class="p">))</span> <span class="c1">-- prints false</span>
+</pre></div>
+</div>
+</section>
+<section id="closure">
+<h2><code class="docutils literal notranslate"><span class="pre">__closure()</span></code><a class="headerlink" href="#closure" title="Link to this heading"></a></h2>
+<p>A class with private or protected methods may want to allow calling those methods from outside of another method of the class, which would generally not be allowed. This can be accomplished using the <code class="docutils literal notranslate"><span class="pre">__closure</span></code> method.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MyClass</span><span class="p">.</span><span class="nc">__private</span><span class="p">:</span><span class="nf">_EventHandler</span><span class="p">(</span><span class="n">eventName</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Handling event: &quot;</span><span class="o">..</span><span class="n">eventName</span><span class="p">)</span>
+<span class="kr">end</span>
+<span class="kd">local</span> <span class="n">classInst</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">Event</span><span class="p">.</span><span class="n">RegisterHandler</span><span class="p">(</span><span class="n">classInst</span><span class="p">:</span><span class="n">__closure</span><span class="p">(</span><span class="s2">&quot;_EventHandler&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</section>
+<section id="virtual-methods">
+<h2>Virtual Methods<a class="headerlink" href="#virtual-methods" title="Link to this heading"></a></h2>
+<p>One of the most powerful features of LibTSMClass is support for virtual class methods. What this means is that within a base class method, an instance of a class is still treated as its an instance of its actual class, not the base class. This is best demonstrated with an example:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">GetMagicNumber</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="mi">99</span>
+<span class="kr">end</span>
+<span class="kr">function</span> <span class="nc">MyClass</span><span class="p">:</span><span class="nf">PrintMagicNumber</span><span class="p">()</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">self</span><span class="p">:</span><span class="n">GetMagicNumber</span><span class="p">())</span>
+<span class="kr">end</span>
+<span class="kr">function</span> <span class="nc">MySubClass</span><span class="p">:</span><span class="nf">GetMagicNumber</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="mi">88</span>
+<span class="kr">end</span>
+<span class="kd">local</span> <span class="n">subClassInst</span> <span class="o">=</span> <span class="n">MySubClass</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">subClassInst</span><span class="p">:</span><span class="n">PrintMagicNumber</span><span class="p">()</span> <span class="c1">-- prints 88</span>
+</pre></div>
+</div>
+</section>
+<section id="abstract-classes">
+<h2>Abstract Classes<a class="headerlink" href="#abstract-classes" title="Link to this heading"></a></h2>
+<p>An abstract class is one which can’t be directly instantiated. Other than this restriction, abstract classes behave exactly the same as normal classes, including the ability to be sub-classed. This is useful in order to define a common interface which multiple child classes are expected to adhere to. An abstract class is defined by passing an extra argument when defining the class as shown below:</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">AbstractClass</span> <span class="o">=</span> <span class="n">LibTSMClass</span><span class="p">.</span><span class="n">DefineClass</span><span class="p">(</span><span class="s2">&quot;AbstractClass&quot;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">,</span> <span class="s2">&quot;ABSTRACT&quot;</span><span class="p">)</span>
+
+<span class="kd">local</span> <span class="n">ImplClass</span> <span class="o">=</span> <span class="n">LibTSMClass</span><span class="p">.</span><span class="n">DefineClass</span><span class="p">(</span><span class="s2">&quot;ImplClass&quot;</span><span class="p">,</span> <span class="n">AbstractClass</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="abstract-class-methods">
+<h2>Abstract Class Methods<a class="headerlink" href="#abstract-class-methods" title="Link to this heading"></a></h2>
+<p>Abstract classes may define abstract methods which subclasses are required to implement. This is done by defining an empty function against the <code class="docutils literal notranslate"><span class="pre">__abstract</span></code> table. Note that this function doesn’t strictly need to be empty, but is never called (or even stored anywhere within LibTSMClass). Abstract class methods are <strong>always implicitly protected</strong>, so must be overridden as such.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kr">function</span> <span class="nc">AbstractClass</span><span class="p">.</span><span class="nc">__abstract</span><span class="p">:</span><span class="nf">_GetResult</span><span class="p">()</span>
+<span class="kr">end</span>
+
+<span class="kr">function</span> <span class="nc">AbstractClass</span><span class="p">:</span><span class="nf">AddNumber</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+	<span class="kr">return</span> <span class="n">num</span> <span class="o">+</span> <span class="n">self</span><span class="p">:</span><span class="n">_GetResult</span><span class="p">()</span>
+<span class="kr">end</span>
+
+<span class="kr">function</span> <span class="nc">ImplClass</span><span class="p">.</span><span class="nc">__protected</span><span class="p">:</span><span class="nf">_GetResult</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="mi">10</span>
+<span class="kr">end</span>
+
+<span class="kd">local</span> <span class="n">inst</span> <span class="o">=</span> <span class="n">ImplClass</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inst</span><span class="p">:</span><span class="n">AddNumber</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span> <span class="c1">-- prints 12</span>
+</pre></div>
+</div>
+</section>
+<section id="extensions">
+<h2>Extensions<a class="headerlink" href="#extensions" title="Link to this heading"></a></h2>
+<p>Extensions allow for adding additional functionality to classes after they are defined. This can enable higher-level code to add functionality to classes which are defined in utility libraries while maintaining separation of concerns.</p>
+<div class="highlight-lua notranslate"><div class="highlight"><pre><span></span><span class="kd">local</span> <span class="n">MySubClassExtension</span> <span class="o">=</span> <span class="n">MySubClass</span><span class="p">:</span><span class="n">__extend</span><span class="p">()</span>
+
+<span class="kr">function</span> <span class="nc">MySubClassExtension</span><span class="p">:</span><span class="nf">GetNegativeMagicNumber</span><span class="p">()</span>
+	<span class="kr">return</span> <span class="n">self</span><span class="p">:</span><span class="n">GetMagicNumber</span><span class="p">()</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
+<span class="kr">end</span>
+
+<span class="kd">local</span> <span class="n">inst</span> <span class="o">=</span> <span class="n">MySubClass</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">inst</span><span class="p">:</span><span class="n">GetNegativeMagicNumber</span><span class="p">())</span> <span class="c1">-- prints -88</span>
+</pre></div>
+</div>
+<p>There are a few restrictions on extension methods:</p>
+<ol class="arabic simple">
+<li><p>All extension methods are defined as public.</p></li>
+<li><p>They cannot access private or protected methods of the class.</p></li>
+<li><p>They can only be created on classes which aren’t subclassed.</p></li>
+</ol>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="LibTSMClass" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="notes.html" class="btn btn-neutral float-right" title="Notes, Limitations, and Gotchas" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, TradeSkillMaster LLC.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
