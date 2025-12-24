@@ -721,6 +721,33 @@ function TestLibTSMClass.TestExtend()
 	luaunit.assertErrorMsgContains("Attempting to call private method (_GetPrivateValue) from outside of class", function() inst1:GetValue2() end)
 end
 
+function TestLibTSMClass.TestEquals()
+	local TestEquals = LibTSMClass.DefineClass("TestEquals")
+	function TestEquals:__init(value)
+		self._value = value
+	end
+	function TestEquals:__equals(other)
+		-- Defer to a private method to show we can access private methods on `other`
+		return self:_GetValue() == other:_GetValue()
+	end
+	function TestEquals.__private:_GetValue()
+		return self._value
+	end
+
+	local TestEqualsSub = LibTSMClass.DefineClass("TestEqualsSub", TestEquals)
+
+	local inst = TestEquals(42)
+	local instSub = TestEqualsSub(77)
+
+	luaunit.assertTrue(inst == inst)
+	luaunit.assertTrue(inst == TestEquals(42))
+	luaunit.assertTrue(inst ~= TestEquals(77))
+	luaunit.assertTrue(inst ~= instSub)
+	luaunit.assertTrue(instSub == TestEqualsSub(77))
+	-- Different classes are never equal
+	luaunit.assertTrue(TestEquals(77) ~= TestEqualsSub(77))
+end
+
 
 
 os.exit(luaunit.LuaUnit.run())
