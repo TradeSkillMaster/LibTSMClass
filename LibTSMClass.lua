@@ -17,11 +17,6 @@ local private = {
 local WEAK_KEY_MT = { __mode = "k" }
 setmetatable(private.extensionInfo, WEAK_KEY_MT)
 setmetatable(private.instInfo, WEAK_KEY_MT)
-local SPECIAL_PROPERTIES = {
-	__init = true,
-	__tostring = true,
-	__dump = true,
-}
 local RESERVED_KEYS = {
 	__super = true,
 	__isa = true,
@@ -41,6 +36,9 @@ local DEFAULT_INST_FIELDS = {
 	end,
 	__tostring = function(self)
 		return private.instInfo[self].str
+	end,
+	__equals = function(self, other)
+		return rawequal(self, other)
 	end,
 	__dump = function(self)
 		private.InstDump(self)
@@ -228,6 +226,12 @@ private.INST_MT = {
 		end
 
 		return nil
+	end,
+	__eq = function(self, other)
+		if self.__class ~= other.__class then
+			return false
+		end
+		return self:__equals(other)
 	end,
 	__tostring = function(self)
 		return self:__tostring()
@@ -429,9 +433,7 @@ private.CLASS_MT = {
 		if not hasSuperclass then
 			-- Set the static members directly on this object for better performance
 			for key, value in pairs(classInfo.static) do
-				if not SPECIAL_PROPERTIES[key] then
-					rawset(inst, key, value)
-				end
+				rawset(inst, key, value)
 			end
 		end
 		-- Check that all the abstract methods have been defined

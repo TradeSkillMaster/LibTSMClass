@@ -152,6 +152,18 @@ local subClassInst = MySubClass(3)
 print(subClassInst) -- prints "MySubClass with a value of 3"
 ```
 
+## `__equals()`
+
+Every class and instance has a special `__equals()` method which can be used to implement custom equality logic. Note that this method is only called if the objects being compared are of the same exact class (parent classes don't count and will never be equal).
+
+```lua
+function MySubClass:__equals(other)
+	return self._value == other._value
+end
+local classInst = MyClass(0)
+print(classInst == MyClass(0)) -- prints "true"
+```
+
 ## `__name`
 
 The `__name` attribute is provided on all classes to look up the name of the class.
