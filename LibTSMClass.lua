@@ -53,6 +53,13 @@ local DUMP_KEY_PATH_DELIM = "\001"
 -- ============================================================================
 
 ---@class Class
+---@field __name string
+---@field __super Class?
+---@field __isa fun(self, class: Class): boolean
+---@field protected __closure fun(self, name: string): function
+---@field __tostring fun(self): string
+---@field __equals fun(self, other: any): boolean
+---@field __dump fun(self)
 
 ---@alias ClassProperties
 ---|'"ABSTRACT"' # An abstract class cannot be directly instantiated
@@ -60,7 +67,7 @@ local DUMP_KEY_PATH_DELIM = "\001"
 ---Defines a new class.
 ---@generic T: Class
 ---@param name `T` The name of the class
----@param superclass? any The superclass
+---@param superclass? Class The superclass
 ---@param ... ClassProperties Properties to define the class with
 ---@return T
 function Lib.DefineClass(name, superclass, ...)
