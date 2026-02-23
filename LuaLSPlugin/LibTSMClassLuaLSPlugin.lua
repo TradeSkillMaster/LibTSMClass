@@ -63,18 +63,16 @@ local function GetClassInitArgs(className, text, lines)
 	return table.concat(args, ", ")
 end
 
-function Plugin.DefineClassHelper(className, parentClassName, text, fileLines)
+function Plugin.DefineClassHelper(className, parentClassName, text, fileLines, genericParams)
+	local classNameWithParams = genericParams and (className.."<"..genericParams..">") or className
 	local lines = {}
 	if parentClassName then
-		table.insert(lines, "---@class "..className..": "..parentClassName)
+		table.insert(lines, "---@class "..classNameWithParams..": "..parentClassName)
 		table.insert(lines, "---@field __super "..parentClassName)
 	else
-		table.insert(lines, "---@class "..className..": Class")
+		table.insert(lines, "---@class "..classNameWithParams..": Class")
 	end
 	table.insert(lines, "---@field __class "..className)
-	table.insert(lines, "---@field __name string")
-	table.insert(lines, "---@field private __closure fun(self, name: string): function")
-	table.insert(lines, "---@field __isa fun(self, class: Class): boolean")
 	local initArgs = GetClassInitArgs(className, text, fileLines) or "..."
 	table.insert(lines, "---@overload fun("..initArgs.."): "..className)
 	return table.concat(lines, "\n").."\n"
@@ -129,7 +127,8 @@ function Plugin.ProcessFileLines(lines, lineStartPos)
 		local defineClassName, defineExtraArgs = line:match("^local [A-Za-z0-9_]+ = LibTSMClass%.DefineClass%(\"([^\"]+)\"(.-)%)")
 		if defineClassName then
 			local parentClassName = defineExtraArgs:match("^, (%a+)$") or defineExtraArgs:match("^, (%a+), ")
-			diffs = AddDiff(diffs, lineStart, nil, Plugin.DefineClassHelper(defineClassName, parentClassName))
+			local genericParams = i > 1 and lines[i - 1]:match("^%-%-%-@generic (.+)$") or nil
+			diffs = AddDiff(diffs, lineStart, nil, Plugin.DefineClassHelper(defineClassName, parentClassName, nil, nil, genericParams))
 		end
 	end
 	return diffs
