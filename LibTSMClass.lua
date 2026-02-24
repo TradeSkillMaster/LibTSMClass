@@ -254,7 +254,7 @@ private.CLASS_MT = {
 		if classInfo.subclassed or classInfo.extended then
 			error("Can't modify classes after they are subclassed or extended", 2)
 		end
-		if classInfo.static[key] then
+		if classInfo.static[key] ~= nil then
 			error("Can't modify or override static members", 2)
 		end
 		if RESERVED_KEYS[key] then
