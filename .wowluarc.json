@@ -1,0 +1,8 @@
+{
+    "ignore": [
+        "Docs/",
+        "LibStub/",
+        "LuaLSPlugin/",
+        "Tests/"
+    ]
+}
