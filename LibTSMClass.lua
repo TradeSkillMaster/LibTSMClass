@@ -743,6 +743,7 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 				context.depth = context.depth + 1
 				for key2, value2 in pairs(tbl) do
 					if type(key2) == "string" or type(key2) == "number" or type(key2) == "boolean" then
+						key2 = tostring(key2)
 						private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
 					end
 				end
@@ -788,6 +789,7 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 						end
 						if type(key2) == "string" or type(key2) == "number" or type(key2) == "boolean" then
 							numTableEntries = numTableEntries + 1
+							key2 = tostring(key2)
 							private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
 						end
 					end
