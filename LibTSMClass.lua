@@ -52,22 +52,31 @@ local DUMP_KEY_PATH_DELIM = "\001"
 -- Public Library Functions
 -- ============================================================================
 
----@class Class
+---@class Class<S>
+---@overload fun(): Class
+---@constructor __init
+---@field __class Class
 ---@field __name string
----@field __super Class?
+---@field __super S
 ---@field __isa fun(self, class: Class): boolean
 ---@field protected __closure fun(self, name: string): function
 ---@field __tostring fun(self): string
 ---@field __equals fun(self, other: any): boolean
 ---@field __dump fun(self)
+---@accessor __private private
+---@accessor __protected protected
+---@accessor __abstract protected
+---@accessor __static
 
 ---@alias ClassProperties
 ---|'"ABSTRACT"' # An abstract class cannot be directly instantiated
 
 ---Defines a new class.
----@generic T: Class
+---@defclass T : P
+---@generic T: Class<P>
+---@generic P: Class
 ---@param name `T` The name of the class
----@param superclass? Class The superclass
+---@param superclass? P The superclass
 ---@param ... ClassProperties Properties to define the class with
 ---@return T
 function Lib.DefineClass(name, superclass, ...)
@@ -734,6 +743,7 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 				context.depth = context.depth + 1
 				for key2, value2 in pairs(tbl) do
 					if type(key2) == "string" or type(key2) == "number" or type(key2) == "boolean" then
+						key2 = tostring(key2)
 						private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
 					end
 				end
@@ -779,6 +789,7 @@ function private.InstDumpVariable(key, value, context, strKeyPath)
 						end
 						if type(key2) == "string" or type(key2) == "number" or type(key2) == "boolean" then
 							numTableEntries = numTableEntries + 1
+							key2 = tostring(key2)
 							private.InstDumpVariable(key2, value2, context, strKeyPath..DUMP_KEY_PATH_DELIM..key2)
 						end
 					end

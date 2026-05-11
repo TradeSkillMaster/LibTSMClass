@@ -1,0 +1,12 @@
+{
+    "diagnostics": {
+        "enable": [
+            "need-check-nil"
+        ]
+    },
+    "ignore": [
+        "Docs/",
+        "LibStub/",
+        "Tests/"
+    ]
+}
