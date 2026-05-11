@@ -33,12 +33,13 @@ jobs:
           ./wowlua_ls-x86_64-unknown-linux-gnu check LibTSMClass/
 
       - name: Run Unit Tests
-        run: lua LibTSMClass/Tests/Unit/TestLibTSMClass.lua -o junit -n test-results.xml
+        working-directory: ./LibTSMClass
+        run: lua Tests/Unit/TestLibTSMClass.lua -o junit -n test-results.xml
 
       - name: Test Report
         uses: dorny/test-reporter@v3
         if: success() || failure()
         with:
           name: Unit Tests
-          path: test-results.xml
+          path: LibTSMClass/test-results.xml
           reporter: java-junit
