@@ -1,0 +1,13 @@
+{
+  "name": "libtsmclass-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "docs:generate": "wowlua_ls doc .. --out-dir api --class LibTSMClass",
+    "docs:dev": "npm run docs:generate && vitepress dev .",
+    "docs:build": "npm run docs:generate && vitepress build ."
+  },
+  "devDependencies": {
+    "vitepress": "^1.0.0"
+  }
+}

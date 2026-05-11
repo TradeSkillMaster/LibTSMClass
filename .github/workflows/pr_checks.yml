@@ -4,13 +4,12 @@ jobs:
   pr:
     name: Pull Request Checks
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
 
     defaults:
       run:
         working-directory: ./repo
-
-    env:
-      LUA_DEPS_PATH: ${{ github.workspace }}/.luadeps
 
     steps:
       - name: Checkout Code
@@ -24,17 +23,26 @@ jobs:
         with:
           luaVersion: "5.1.5"
 
-      - name: Install Luarocks
-        uses: leafo/gh-actions-luarocks@v4
+      - name: Download wowlua-ls
+        uses: robinraju/release-downloader@v1
+        with:
+          repository: 'TradeSkillMaster/wowlua-ls'
+          latest: true
+          fileName: 'wowlua_ls-x86_64-unknown-linux-gnu'
+          out-file-path: './'
 
-      - name: Install Lua Dependencies
+      - name: Run wowlua-ls Check
         run: |
-          mkdir -p $LUA_DEPS_PATH
-          git clone --depth=1 https://github.com/TradeSkillMaster/luacheck.git $LUA_DEPS_PATH/luacheck
-          cd $LUA_DEPS_PATH/luacheck && luarocks make
-
-      - name: Run Luacheck
-        run: luacheck .
+          chmod +x ../wowlua_ls-x86_64-unknown-linux-gnu
+          ../wowlua_ls-x86_64-unknown-linux-gnu check .
 
       - name: Run Unit Tests
-        run: lua Tests/Unit/TestLibTSMClass.lua -o tap
+        run: lua Tests/Unit/TestLibTSMClass.lua -o junit -n test-results.xml
+
+      - name: Test Report
+        uses: dorny/test-reporter@v3
+        if: success() || failure()
+        with:
+          name: Unit Tests
+          path: repo/test-results.xml
+          reporter: java-junit
