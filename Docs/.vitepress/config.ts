@@ -2,7 +2,7 @@ import { defineConfig } from "vitepress"
 
 export default defineConfig({
 	title: "LibTSMClass",
-	description: "OOP class library for World of Warcraft Lua addons",
+	description: "OOP class library for World of Warcraft addons",
 	themeConfig: {
 		nav: [
 			{ text: "Home", link: "/" },

@@ -7,6 +7,6 @@
     "ignore": [
         "Docs/",
         "LibStub/",
-"Tests/"
+        "Tests/"
     ]
 }
