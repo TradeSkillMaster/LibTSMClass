@@ -1,0 +1,1 @@
+import{_ as s,o as e,c as a,ae as i}from"./chunks/framework.Co1PSFSm.js";const k=JSON.parse('{"title":"API","description":"","frontmatter":{},"headers":[],"relativePath":"api.md","filePath":"api.md"}'),d={name:"api.md"};function n(h,t,r,o,l,p){return e(),a("div",null,[...t[0]||(t[0]=[i("",23)])])}const g=s(d,[["render",n]]);export{k as __pageData,g as default};

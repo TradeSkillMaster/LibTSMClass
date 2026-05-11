@@ -1,0 +1,1 @@
+import{_ as i,o as a,c as n,ae as l}from"./chunks/framework.Co1PSFSm.js";const y=JSON.parse('{"title":"LibTSMClass","description":"","frontmatter":{},"headers":[],"relativePath":"index.md","filePath":"index.md"}'),h={name:"index.md"};function k(t,s,p,e,E,r){return a(),n("div",null,[...s[0]||(s[0]=[l("",4)])])}const g=i(h,[["render",k]]);export{y as __pageData,g as default};
