@@ -7,16 +7,12 @@ jobs:
     permissions:
       checks: write
 
-    defaults:
-      run:
-        working-directory: ./repo
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           submodules: true
-          path: repo
+          path: LibTSMClass/
 
       - name: Install Lua 5.1.5
         uses: leafo/gh-actions-lua@v10
@@ -33,16 +29,16 @@ jobs:
 
       - name: Run wowlua-ls Check
         run: |
-          chmod +x ../wowlua_ls-x86_64-unknown-linux-gnu
-          ../wowlua_ls-x86_64-unknown-linux-gnu check .
+          chmod +x ./wowlua_ls-x86_64-unknown-linux-gnu
+          ./wowlua_ls-x86_64-unknown-linux-gnu check LibTSMClass/
 
       - name: Run Unit Tests
-        run: lua Tests/Unit/TestLibTSMClass.lua -o junit -n test-results.xml
+        run: lua LibTSMClass/Tests/Unit/TestLibTSMClass.lua -o junit -n test-results.xml
 
       - name: Test Report
         uses: dorny/test-reporter@v3
         if: success() || failure()
         with:
           name: Unit Tests
-          path: repo/test-results.xml
+          path: test-results.xml
           reporter: java-junit
