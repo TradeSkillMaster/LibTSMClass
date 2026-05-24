@@ -152,6 +152,8 @@ local subClassInst = MySubClass(3)
 print(subClassInst) -- prints "MySubClass with a value of 3"
 ```
 
+**NOTE:** All classes and instances also alias `:ToDebugString()` to `__tostring()` to handle the fact that WoW calls this within debuglocals() and errors if it doesn't exist.
+
 ## `__equals()`
 
 Every class and instance has a special `__equals()` method which can be used to implement custom equality logic. Note that this method is only called if the objects being compared are of the same exact class (parent classes don't count and will never be equal).
