@@ -37,6 +37,9 @@ local DEFAULT_INST_FIELDS = {
 	__tostring = function(self)
 		return private.instInfo[self].str
 	end,
+	ToDebugString = function(self)
+		return private.instInfo[self].str
+	end,
 	__equals = function(self, other)
 		return rawequal(self, other)
 	end,
@@ -417,6 +420,8 @@ private.CLASS_MT = {
 			return classInfo.static[key]
 		elseif classInfo.superStatic[key] then
 			return classInfo.superStatic[key].value
+		elseif key == "ToDebugString" then
+			return private.CLASS_MT.__tostring
 		end
 		error(format("Invalid static class key (%s)", tostring(key)), 2)
 	end,
