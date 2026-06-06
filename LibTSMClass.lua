@@ -435,6 +435,7 @@ private.CLASS_MT = {
 		-- Create a new instance of this class
 		local inst = private.constructTbl or {}
 		local instStr = strmatch(tostring(inst), "table:[^1-9a-fA-F]*([0-9a-fA-F]+)")
+		assert(instStr)
 		setmetatable(inst, private.INST_MT)
 		local classInfo = private.classInfo[self]
 		local hasSuperclass = classInfo.superclass and true or false

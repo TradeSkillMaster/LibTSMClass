@@ -1,12 +1,17 @@
 {
     "diagnostics": {
         "enable": [
-            "need-check-nil"
+            "need-check-nil",
+            "nil-index",
+            "invalid-op",
+            "redundant-or",
+            "redundant-and"
         ]
     },
     "ignore": [
         "Docs/",
         "LibStub/",
         "Tests/"
-    ]
+    ],
+    "framexml": false
 }
