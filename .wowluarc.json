@@ -5,7 +5,8 @@
             "nil-index",
             "invalid-op",
             "redundant-or",
-            "redundant-and"
+            "redundant-and",
+            "redundant-condition"
         ]
     },
     "ignore": [
