@@ -55,21 +55,6 @@ local DUMP_KEY_PATH_DELIM = "\001"
 -- Public Library Functions
 -- ============================================================================
 
----@class Class<S>
----@overload fun(): Class
----@constructor __init
----@field __class Class
----@field __name string
----@field __super S
----@field __isa fun(self, class: Class): boolean
----@field protected __closure fun(self, name: string): function
----@field __tostring fun(self): string
----@field __equals fun(self, other: any): boolean
----@field __dump fun(self)
----@accessor __private private
----@accessor __protected protected
----@accessor __abstract protected
----@accessor __static
 
 ---@alias ClassProperties
 ---|'"ABSTRACT"' # An abstract class cannot be directly instantiated
@@ -843,7 +828,7 @@ end
 
 do
 	-- Register with LibStub
-	local libStubTbl = LibStub:NewLibrary("LibTSMClass", MINOR_REVISION)
+	local libStubTbl = LibStub:NewLibrary("LibTSMClass", MINOR_REVISION) --[[@as LibTSMClass?]]
 	if libStubTbl then
 		for k, v in pairs(Lib) do
 			libStubTbl[k] = v
@@ -852,3 +837,53 @@ do
 	-- Return the library and our private table for unit testing
 	return {Lib, private}
 end
+
+
+
+-- ============================================================================
+-- Class Type (LS Support Only)
+-- ============================================================================
+
+---@diagnostic disable: missing-return
+
+---@class Class<S>
+---@overload fun(): Class<S>
+---@constructor __init
+---@field __class Class
+---@field __name string
+---@field __super S
+---@field __tostring fun(self): string
+---@field __dump fun(self)
+---@accessor __private private
+---@accessor __protected protected
+---@accessor __abstract protected
+---@accessor __static
+local Class = {}
+
+---Returns a closure for the given method that bypasses access controls and passes self.
+---@protected
+---@generic K: keyof self
+---@param name K
+---@return function
+function Class:__closure(name) end
+
+---Checks if the current instance is a class (or a subclass of it).
+---@generic C: Class
+---@param class C
+---@type-narrows 0 1
+---@return boolean
+function Class:__isa(class) end
+
+---Casts the current instance to a parent class.
+---@generic C: Class, T: C
+---@param self T
+---@param class C
+---@return T
+function Class.__as(self, class) end
+
+---Checks if the current instance is equal to another (can be overridden).
+---@param other any
+---@return boolean
+function Class:__equals(other) end
+
+---@diagnostic enable: missing-return
