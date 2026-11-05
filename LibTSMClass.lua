@@ -1,6 +1,6 @@
 --- LibTSMClass Library
 -- Allows for OOP in lua through the implementation of classes. Many features of proper classes are supported including
--- inhertiance, polymorphism, and virtual methods.
+-- inheritance, polymorphism, and virtual methods.
 -- @author TradeSkillMaster Team (admin@tradeskillmaster.com)
 -- @license MIT
 
@@ -710,7 +710,7 @@ end
 
 function private.InstDumpVariable(key, value, context, strKeyPath)
 	if strfind(key, DUMP_KEY_PATH_DELIM, nil, true) then
-		-- Ignore keys with our deliminator in them
+		-- Ignore keys with our delimiter in them
 		return
 	end
 	if type(value) == "table" and private.classInfo[value] then
