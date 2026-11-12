@@ -97,6 +97,13 @@ function Lib.DefineClass(name, superclass, ...)
 		methodProperties = nil, -- Set as needed
 		inClassFunc = 0,
 		instances = setmetatable({}, WEAK_KEY_MT),
+		instMT = {
+			__newindex = private.INST_MT.__newindex,
+			__index = private.INST_MT.__index,
+			__eq = superclass and private.classInfo[superclass].instMT.__eq or nil,
+			__tostring = private.INST_MT.__tostring,
+			__metatable = false,
+		},
 	}
 	while superclass do
 		local superclassInfo = private.classInfo[superclass]
@@ -231,12 +238,6 @@ private.INST_MT = {
 
 		return nil
 	end,
-	__eq = function(self, other)
-		if self.__class ~= other.__class then
-			return false
-		end
-		return self:__equals(other)
-	end,
 	__tostring = function(self)
 		return self:__tostring()
 	end,
@@ -263,6 +264,9 @@ private.CLASS_MT = {
 		end
 		if RESERVED_KEYS[key] then
 			error("Reserved word: "..key, 2)
+		end
+		if key == "__equals" then
+			classInfo.instMT.__eq = private.InstEquals
 		end
 		local isFunction = type(value) == "function"
 		local methodProperty = classInfo.referenceType
@@ -421,8 +425,8 @@ private.CLASS_MT = {
 		local inst = private.constructTbl or {}
 		local instStr = strmatch(tostring(inst), "table:[^1-9a-fA-F]*([0-9a-fA-F]+)")
 		assert(instStr)
-		setmetatable(inst, private.INST_MT)
 		local classInfo = private.classInfo[self]
+		setmetatable(inst, classInfo.instMT)
 		local hasSuperclass = classInfo.superclass and true or false
 		private.instInfo[inst] = {
 			class = self,
@@ -528,6 +532,9 @@ private.EXTENSION_MT = {
 		-- the class as far as access restrictions are concerned and don't need to worry about
 		-- virtual methods since extensions only support non-subclassed classes.
 		classInfo.static[key] = value
+		if key == "__equals" then
+			classInfo.instMT.__eq = private.InstEquals
+		end
 		-- Add the new method directly to all previously-created instances
 		for inst in pairs(classInfo.instances) do
 			rawset(inst, key, value)
@@ -593,6 +600,13 @@ end
 
 function private.InstIsA(inst, targetClass)
 	return private.instInfo[inst].isClassLookup[targetClass]
+end
+
+function private.InstEquals(inst, other)
+	if inst.__class ~= other.__class then
+		return false
+	end
+	return inst:__equals(other)
 end
 
 function private.InstAs(inst, targetClass)
