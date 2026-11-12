@@ -748,6 +748,51 @@ function TestLibTSMClass.TestEquals()
 	luaunit.assertTrue(TestEquals(77) ~= TestEqualsSub(77))
 end
 
+function TestLibTSMClass.TestEqualsDefault()
+	local TestEqualsDefault = LibTSMClass.DefineClass("TestEqualsDefault")
+	local TestEqualsDefaultSub = LibTSMClass.DefineClass("TestEqualsDefaultSub", TestEqualsDefault)
+	function TestEqualsDefaultSub:__init(value)
+		self._value = value
+	end
+	function TestEqualsDefaultSub:__equals(other)
+		return self._value == other._value
+	end
+	local TestEqualsDefaultSubSub = LibTSMClass.DefineClass("TestEqualsDefaultSubSub", TestEqualsDefaultSub)
+
+	local inst = TestEqualsDefault()
+	luaunit.assertTrue(inst == inst)
+	luaunit.assertTrue(inst ~= TestEqualsDefault())
+	luaunit.assertTrue(inst:__equals(inst))
+	luaunit.assertFalse(inst:__equals(TestEqualsDefault()))
+	luaunit.assertTrue(TestEqualsDefaultSub(1) == TestEqualsDefaultSub(1))
+	luaunit.assertTrue(TestEqualsDefaultSub(1) ~= TestEqualsDefaultSub(2))
+	luaunit.assertTrue(TestEqualsDefaultSubSub(1) == TestEqualsDefaultSubSub(1))
+	luaunit.assertTrue(TestEqualsDefaultSubSub(1) ~= TestEqualsDefaultSubSub(2))
+	luaunit.assertTrue(TestEqualsDefaultSubSub(1) ~= TestEqualsDefaultSub(1))
+	luaunit.assertTrue(inst ~= TestEqualsDefaultSub(1))
+	luaunit.assertTrue(TestEqualsDefaultSub(1) ~= inst)
+end
+
+function TestLibTSMClass.TestEqualsExtension()
+	local TestEqualsExtension = LibTSMClass.DefineClass("TestEqualsExtension")
+	function TestEqualsExtension:__init(value)
+		self._value = value
+	end
+
+	local inst1 = TestEqualsExtension(1)
+	local inst2 = TestEqualsExtension(1)
+	luaunit.assertTrue(inst1 ~= inst2)
+
+	local TestEqualsExtensionExtensions = TestEqualsExtension:__extend()
+	function TestEqualsExtensionExtensions:__equals(other)
+		return self._value == other._value
+	end
+
+	luaunit.assertTrue(inst1 == inst2)
+	luaunit.assertTrue(inst1 == TestEqualsExtension(1))
+	luaunit.assertTrue(inst1 ~= TestEqualsExtension(2))
+end
+
 
 
 os.exit(luaunit.LuaUnit.run())
