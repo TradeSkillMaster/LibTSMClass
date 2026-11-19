@@ -20,11 +20,13 @@ externals:
 
 Otherwise, you can download the [latest release directly from GitHub](https://github.com/TradeSkillMaster/LibTSMClass/releases).
 
+Add `LibTSMClass.lua` to your `.toc` (or equivalent XML) and the `LibTSMClass` namespace will be added to your local addon table.
+
 ## Example
 
 A basic example of the library is below:
 ```lua
-local LibTSMClass = LibStub("LibTSMClass")
+local LibTSMClass = select(2, ...).LibTSMClass
 local MyClass = LibTSMClass.DefineClass("MyClass")
 
 function MyClass:__init(value)

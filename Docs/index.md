@@ -7,8 +7,11 @@ were sufficiently performant.
 
 ## Example
 
+To use LibTSMClass, add `LibTSMClass.lua` to your `.toc` (or equivalent XML) and the `LibTSMClass`
+namespace will be added to your local addon table:
+
 ```lua
-local LibTSMClass = LibStub("LibTSMClass")
+local LibTSMClass = select(2, ...).LibTSMClass
 local MyClass = LibTSMClass.DefineClass("MyClass")
 
 function MyClass:__init(value)
