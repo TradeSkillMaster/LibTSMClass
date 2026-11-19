@@ -4,7 +4,7 @@
 -- @author TradeSkillMaster Team (admin@tradeskillmaster.com)
 -- @license MIT
 
-local MINOR_REVISION = 2
+local ADDON_TABLE = select(2, ...)
 local Lib = {} ---@class LibTSMClass
 local private = {
 	classInfo = {},
@@ -841,13 +841,7 @@ end
 -- ============================================================================
 
 do
-	-- Register with LibStub
-	local libStubTbl = LibStub:NewLibrary("LibTSMClass", MINOR_REVISION) --[[@as LibTSMClass?]]
-	if libStubTbl then
-		for k, v in pairs(Lib) do
-			libStubTbl[k] = v
-		end
-	end
+	ADDON_TABLE.LibTSMClass = Lib
 	-- Return the library and our private table for unit testing
 	return {Lib, private}
 end

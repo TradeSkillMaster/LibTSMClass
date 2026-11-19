@@ -11,7 +11,6 @@
     },
     "ignore": [
         "Docs/",
-        "LibStub/",
         "Tests/"
     ],
     "framexml": false

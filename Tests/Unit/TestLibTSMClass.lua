@@ -3,8 +3,9 @@ luaunit = require('Tests.Unit.Include.luaunit')
 require('Tests.Unit.Include.wowunit')
 
 -- code under test
-require('LibStub.LibStub')
-local LibTSMClass, private = unpack(require('LibTSMClass'))
+local ADDON_TABLE = {}
+local _, private = unpack(loadfile('LibTSMClass.lua')('LibTSMClass', ADDON_TABLE))
+local LibTSMClass = ADDON_TABLE.LibTSMClass
 
 
 
